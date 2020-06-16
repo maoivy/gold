@@ -66,10 +66,10 @@ export default class TaskResponse extends React.Component {
         parseInt(this.state.row) === stage.get("mineRow") &&
         parseInt(this.state.column) === stage.get("mineCol")
       ) {
-        this.setState({ gold: true });
+        this.setState({ gold: true, message: "You found gold!" });
         player.set("score", old_score + 1);
       } else {
-        this.setState({ gold: false });
+        this.setState({ gold: false, message: "There's no gold here." });
       }
     } else {
       this.setState({ message: "That's not a valid location!" });
@@ -111,13 +111,6 @@ export default class TaskResponse extends React.Component {
       return this.renderSubmitted();
     }
 
-    let digFeedback = "";
-    if (this.state.gold === true) {
-      digFeedback = "You found gold!";
-    } else if (this.state.gold === false) {
-      digFeedback = "There's no gold here.";
-    }
-
     return (
       <div className="task-response">
         <div className="world">
@@ -147,7 +140,6 @@ export default class TaskResponse extends React.Component {
           <button onClick={(event) => this.handleDig(event)}>Dig</button>
           <button type="submit">Finish</button>
         </form>
-        {digFeedback}
         {this.state.message}
       </div>
     );
