@@ -15,13 +15,19 @@ Empirica.onStageStart((game, round, stage) => {
   // generate the world
   const world = [];
   for (let i = 0; i < 20; i++) {
-    world.push({ dug: false, mine: false });
+    let row = [];
+    for (let j = 0; j < 20; j++) {
+      row.push({ dug: false, mine: false, key: i * 20 + j });
+    }
+    world.push(row);
   }
 
   // generate the mine
-  const mine = Math.floor(Math.random() * 20);
-  stage.set("mine", mine);
-  // world[mine].set("mine", true);
+  const mineRow = Math.floor(Math.random() * 20);
+  const mineCol = Math.floor(Math.random() * 20);
+  stage.set("mineRow", mineRow);
+  stage.set("mineCol", mineCol);
+  world[mineRow][mineCol]["mine"] = true;
   stage.set("world", world);
 
   // give the mine location to a player

@@ -6,7 +6,19 @@ export class Location extends React.Component {
   }
 
   render() {
-    return <div className="location">{this.props.dug ? "o" : "x"}</div>;
+    let className = "location";
+    if (this.props.dug) {
+      className += " location-revealed";
+    } else {
+      className += " location-hidden";
+    }
+
+    let content = "";
+    if (this.props.dug && this.props.mine) {
+      content = "G";
+    }
+
+    return <div className={className}>{content}</div>;
   }
 }
 
@@ -14,9 +26,9 @@ export default class TaskResponse extends React.Component {
   constructor(props) {
     super(props);
     const { stage } = this.props;
-    console.log(stage);
     this.state = {
-      input: null,
+      row: null,
+      column: null,
       gold: null,
       world: stage.get("world"),
       message: null,
@@ -31,19 +43,29 @@ export default class TaskResponse extends React.Component {
     }
   };
 
-  handleChange = (value) => {
-    this.setState({ input: value });
+  handleRowChange = (value) => {
+    this.setState({ row: value });
+  };
+
+  handleColChange = (value) => {
+    this.setState({ column: value });
   };
 
   handleDig = (event) => {
     event.preventDefault();
     const { stage, player } = this.props;
     const old_score = player.get("score");
-    if (this.validateInput(this.state.input)) {
+    if (
+      this.validateInput(this.state.row) &&
+      this.validateInput(this.state.column)
+    ) {
       const updatedWorld = this.state.world;
-      updatedWorld[this.state.input - 1]["dug"] = true;
+      updatedWorld[this.state.row][this.state.column]["dug"] = true;
       this.setState({ world: updatedWorld });
-      if (parseInt(this.state.input) === stage.get("mine")) {
+      if (
+        parseInt(this.state.row) === stage.get("mineRow") &&
+        parseInt(this.state.column) === stage.get("mineCol")
+      ) {
         this.setState({ gold: true });
         player.set("score", old_score + 1);
       } else {
@@ -58,7 +80,7 @@ export default class TaskResponse extends React.Component {
     const inputInt = parseInt(input);
     if (!Number.isInteger(inputInt)) {
       return false;
-    } else if (inputInt < 1 || inputInt > 20) {
+    } else if (inputInt < 0 || inputInt > 19) {
       return false;
     } else {
       return true;
@@ -75,7 +97,7 @@ export default class TaskResponse extends React.Component {
       <div className="task-response">
         <div className="response-submitted">
           <h5>Waiting on other players...</h5>
-          Please wait until all players are ready
+          Please wait until all players are ready.
         </div>
       </div>
     );
@@ -99,14 +121,28 @@ export default class TaskResponse extends React.Component {
     return (
       <div className="task-response">
         <div className="world">
-          {this.state.world.map((location, k) => (
-            <Location key={k} dug={location["dug"]} />
+          {this.state.world.map((row, k) => (
+            <div key={k} className="row">
+              {row.map((location) => (
+                <Location
+                  key={location["key"]}
+                  dug={location["dug"]}
+                  mine={location["mine"]}
+                />
+              ))}
+            </div>
           ))}
         </div>
         <form onSubmit={this.handleSubmit}>
+          Row:
           <input
             type="text"
-            onChange={(event) => this.handleChange(event.target.value)}
+            onChange={(event) => this.handleRowChange(event.target.value)}
+          />
+          Column:
+          <input
+            type="text"
+            onChange={(event) => this.handleColChange(event.target.value)}
           />
           <button onClick={(event) => this.handleDig(event)}>Dig</button>
           <button type="submit">Finish</button>
