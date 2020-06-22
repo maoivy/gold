@@ -18,9 +18,19 @@ Empirica.gameInit((game) => {
   _.times(10, (i) => {
     const round = game.addRound();
     round.addStage({
-      name: "response",
-      displayName: "Response",
+      name: "discussion",
+      displayName: "Discussion",
       durationInSeconds: 120,
+    });
+    round.addStage({
+      name: "dig",
+      displayName: "Dig",
+      durationInSeconds: 60,
+    });
+    round.addStage({
+      name: "reveal",
+      displayName: "Reveal",
+      durationInSeconds: 60,
     });
   });
 });

@@ -111,8 +111,10 @@ export default class TaskResponse extends React.Component {
       return this.renderSubmitted();
     }
 
-    return (
-      <div className="task-response">
+    const discussion = <div>discussion</div>;
+
+    const dig = (
+      <>
         <div className="world">
           {this.state.world.map((row, k) => (
             <div key={k} className="row">
@@ -141,6 +143,23 @@ export default class TaskResponse extends React.Component {
           <button type="submit">Finish</button>
         </form>
         {this.state.message}
+      </>
+    );
+
+    const reveal = (
+      <div>
+        reveal{" "}
+        <form onSubmit={this.handleSubmit}>
+          <button type="submit">Finish</button>
+        </form>
+      </div>
+    );
+
+    return (
+      <div className="task-response">
+        {stage.name === "discussion" && discussion}
+        {stage.name === "dig" && dig}
+        {stage.name === "reveal" && reveal}
       </div>
     );
   }
