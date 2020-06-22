@@ -25,12 +25,12 @@ export class Location extends React.Component {
 export default class TaskResponse extends React.Component {
   constructor(props) {
     super(props);
-    const { stage } = this.props;
+    const { round } = this.props;
     this.state = {
       row: null,
       column: null,
       gold: null,
-      world: stage.get("world"),
+      world: round.get("world"),
       message: null,
     };
   }
@@ -53,7 +53,7 @@ export default class TaskResponse extends React.Component {
 
   handleDig = (event) => {
     event.preventDefault();
-    const { stage, player } = this.props;
+    const { round, player } = this.props;
     const old_score = player.get("score");
     if (
       this.validateInput(this.state.row) &&
@@ -63,8 +63,8 @@ export default class TaskResponse extends React.Component {
       updatedWorld[this.state.row][this.state.column]["dug"] = true;
       this.setState({ world: updatedWorld });
       if (
-        parseInt(this.state.row) === stage.get("mineRow") &&
-        parseInt(this.state.column) === stage.get("mineCol")
+        parseInt(this.state.row) === round.get("mineRow") &&
+        parseInt(this.state.column) === round.get("mineCol")
       ) {
         this.setState({ gold: true, message: "You found gold!" });
         player.set("score", old_score + 1);

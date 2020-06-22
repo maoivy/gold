@@ -6,9 +6,9 @@ export default class TaskStimulus extends React.Component {
 
     let mineLocation = "The mine's location is unknown.";
     if (player.get("chosen") || player.get("knows")) {
-      mineLocation = `The mine is at row ${stage.get(
+      mineLocation = `The mine is at row ${round.get(
         "mineRow"
-      )}, column ${stage.get("mineCol")}.`;
+      )}, column ${round.get("mineCol")}.`;
     }
 
     return <div className="task-stimulus">{mineLocation}</div>;

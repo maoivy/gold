@@ -7,11 +7,7 @@ Empirica.onGameStart((game) => {});
 
 // onRoundStart is triggered before each round starts, and before onStageStart.
 // It receives the same options as onGameStart, and the round that is starting.
-Empirica.onRoundStart((game, round) => {});
-
-// onStageStart is triggered before each stage starts.
-// It receives the same options as onRoundStart, and the stage that is starting.
-Empirica.onStageStart((game, round, stage) => {
+Empirica.onRoundStart((game, round) => {
   // generate the world
   const world = [];
   for (let i = 0; i < 20; i++) {
@@ -25,10 +21,10 @@ Empirica.onStageStart((game, round, stage) => {
   // generate the mine
   const mineRow = Math.floor(Math.random() * 20);
   const mineCol = Math.floor(Math.random() * 20);
-  stage.set("mineRow", mineRow);
-  stage.set("mineCol", mineCol);
+  round.set("mineRow", mineRow);
+  round.set("mineCol", mineCol);
   world[mineRow][mineCol]["mine"] = true;
-  stage.set("world", world);
+  round.set("world", world);
 
   // give the mine location to a player
   const num_players = game.players.length;
@@ -39,6 +35,10 @@ Empirica.onStageStart((game, round, stage) => {
   });
   game.players[chosen].set("chosen", true);
 });
+
+// onStageStart is triggered before each stage starts.
+// It receives the same options as onRoundStart, and the stage that is starting.
+Empirica.onStageStart((game, round, stage) => {});
 
 // onStageEnd is triggered after each stage.
 // It receives the same options as onRoundEnd, and the stage that just ended.
