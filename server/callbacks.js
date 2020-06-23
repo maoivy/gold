@@ -99,6 +99,7 @@ Empirica.onStageEnd((game, round, stage) => {
         (mineChoices[mine.row * ROWS + mine.col] = {
           players: [],
           gold: mine.gold,
+          distributed: null,
         })
     );
     game.players.forEach((player, k) => {
@@ -110,21 +111,25 @@ Empirica.onStageEnd((game, round, stage) => {
         }
       }
     });
-    round.set("mineChoices", mineChoices);
 
     // distribute gold accordingly
-    Object.values(mineChoices).forEach((data) => {
-      console.log(data);
+    Object.entries(mineChoices).forEach((entry) => {
+      let index = entry[0];
+      let data = entry[1];
+
       let players = data.players;
       let totalGold = data.gold;
       if (players.length !== 0) {
         let goldReceived = getGold(totalGold, players.length);
+        mineChoices[index]["distributed"] = goldReceived;
         players.forEach((playerIndex) => {
           let currentScore = game.players[playerIndex].get("score");
           game.players[playerIndex].set("score", currentScore + goldReceived);
         });
       }
     });
+
+    round.set("mineChoices", mineChoices);
   }
 });
 

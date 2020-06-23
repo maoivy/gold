@@ -50,10 +50,12 @@ export default class TaskStimulus extends React.Component {
         let locationIndex = location.row * ROWS + location.col;
         let otherPlayers = null;
         let totalGold = null;
+        let goldReceived = null;
         if (mineChoices[locationIndex]) {
           foundMine = true;
           otherPlayers = mineChoices[locationIndex]["players"].length - 1;
           totalGold = mineChoices[locationIndex]["gold"];
+          goldReceived = mineChoices[locationIndex]["distributed"];
         }
         reveal = (
           <>
@@ -64,7 +66,7 @@ export default class TaskStimulus extends React.Component {
               <p>
                 You found a mine! There was {totalGold} total gold at the mine,
                 and there were {otherPlayers} other players also digging at the
-                same mine.
+                same mine, so you got {goldReceived} gold.
               </p>
             ) : (
               <p>There's no mine here, so your score stays the same.</p>
