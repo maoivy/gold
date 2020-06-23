@@ -4,13 +4,15 @@ import Location from "./Location";
 export default class TaskResponse extends React.Component {
   constructor(props) {
     super(props);
-    const { round } = this.props;
+    const { game, player } = this.props;
+    this.otherPlayers = _.reject(game.players, (p) => p._id === player._id);
+
     this.state = {
       row: null,
       col: null,
-      gold: null,
-      world: round.get("world"),
       message: null,
+      player: this.otherPlayers[0]._id,
+      sent: new Set(),
     };
   }
 
@@ -69,6 +71,42 @@ export default class TaskResponse extends React.Component {
     }
   };
 
+  handleSend = (event) => {
+    event.preventDefault();
+    if (
+      !this.validateInput(this.state.row) ||
+      !this.validateInput(this.state.col)
+    ) {
+      this.setState({ message: "That's not a valid location!" });
+    } else if (!this.state.player) {
+      this.setState({ message: "Select a player." });
+    } else if (this.state.sent.has(this.state.player)) {
+      this.setState({
+        message: "You've already sent a message to this player.",
+      });
+    } else {
+      const { game, player } = this.props;
+      const message = {
+        author: player,
+        row: this.state.row,
+        col: this.state.col,
+        gold: true,
+      };
+
+      game.players.forEach((player) => {
+        if (player._id === this.state.player) {
+          let messages = player.get("messages");
+          messages.push(message);
+          player.set("messages", messages);
+        }
+      });
+      this.setState((prevState) => ({
+        message: "Your message was sent!",
+        sent: prevState.sent.add(this.state.player),
+      }));
+    }
+  };
+
   renderSubmitted() {
     return (
       <div className="task-response">
@@ -87,13 +125,37 @@ export default class TaskResponse extends React.Component {
       return this.renderSubmitted();
     }
 
-    const otherPlayers = _.reject(game.players, (p) => p._id === player._id);
-
     const discussion = (
       <div>
         Send a message to the other players!
-        <form onSubmit={this.handleSubmit}>
-          <button type="submit">Finish</button>
+        <form>
+          <div>
+            Sending to:
+            <select
+              value={this.state.player}
+              onChange={(event) =>
+                this.setState({ player: event.target.value })
+              }
+            >
+              {this.otherPlayers.map((player) => (
+                <option key={player._id} value={player._id}>
+                  {player.id}
+                </option>
+              ))}
+            </select>
+          </div>
+          Row:
+          <input
+            type="text"
+            onChange={(event) => this.handleRowChange(event.target.value)}
+          />
+          Column:
+          <input
+            type="text"
+            onChange={(event) => this.handleColChange(event.target.value)}
+          />
+          <button onClick={(event) => this.handleSend(event)}>Send</button>
+          {this.state.message}
         </form>
       </div>
     );

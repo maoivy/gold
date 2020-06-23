@@ -66,10 +66,12 @@ Empirica.onRoundStart((game, round) => {
       revealed.add(square);
     }
     player.set("revealed", Array.from(revealed));
+    // reset previous data for the player
     player.set("location", null);
+    player.set("messages", []);
   });
 
-  // also reset previous data
+  // also reset previous data for the round
   round.set("mineChoices", null);
 });
 
