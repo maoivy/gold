@@ -9,31 +9,57 @@ Empirica.onGameStart((game) => {});
 // It receives the same options as onGameStart, and the round that is starting.
 Empirica.onRoundStart((game, round) => {
   // generate the world
-  const world = [];
-  for (let i = 0; i < 20; i++) {
+  let world = [];
+  let worldSet = new Set();
+  for (let i = 0; i < 10; i++) {
     let row = [];
-    for (let j = 0; j < 20; j++) {
-      row.push({ dug: false, mine: false, key: i * 20 + j });
+    for (let j = 0; j < 10; j++) {
+      row.push({ revealed: false, mine: false, row: i, col: j });
+      worldSet.add({ row: i, col: j });
     }
     world.push(row);
   }
 
-  // generate the mine
-  const mineRow = Math.floor(Math.random() * 20);
-  const mineCol = Math.floor(Math.random() * 20);
-  round.set("mineRow", mineRow);
-  round.set("mineCol", mineCol);
-  world[mineRow][mineCol]["mine"] = true;
+  // generate the mines (between 1 and 5)
+  const numMines = Math.floor(Math.random() * 4) + 1;
+  let mines = [];
+  for (let i = 0; i < numMines; i++) {
+    let mineRow = Math.floor(Math.random() * 10);
+    let mineCol = Math.floor(Math.random() * 10);
+    mines.push({ row: mineRow, col: mineCol });
+    worldSet.delete({ row: mineRow, col: mineCol });
+    world[mineRow][mineCol]["mine"] = true;
+  }
+  round.set("mines", mines);
   round.set("world", world);
 
-  // give the mine location to a player
-  const num_players = game.players.length;
-  const chosen = Math.floor(Math.random() * num_players);
+  // reveal squares for each player
+  const numNormal = 100 - numMines;
+  const normals = Array.from(worldSet);
+
   game.players.forEach((player) => {
-    player.set("knows", false);
-    player.set("chosen", false);
+    let revealed = new Set();
+    for (let i = 0; i < 10; i++) {
+      let showMine = Math.floor(Math.random()) < player.get("chance");
+      let minesRemaining = mines.some((mine) => !revealed.has(mine));
+
+      if (showMine && minesRemaining) {
+        let index = Math.floor(Math.random() * numMines);
+        while (revealed.has(mines[index])) {
+          index = Math.floor(Math.random() * numMines);
+        }
+        square = mines[index];
+      } else {
+        let index = Math.floor(Math.random() * numNormal);
+        while (revealed.has(normals[index])) {
+          index = Math.floor(Math.random() * numNormal);
+        }
+        square = normals[index];
+      }
+      revealed.add(square);
+    }
+    player.set("revealed", Array.from(revealed));
   });
-  game.players[chosen].set("chosen", true);
 });
 
 // onStageStart is triggered before each stage starts.

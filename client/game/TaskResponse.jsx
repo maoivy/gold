@@ -1,26 +1,5 @@
 import React from "react";
-
-export class Location extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
-  render() {
-    let className = "location";
-    if (this.props.dug) {
-      className += " location-revealed";
-    } else {
-      className += " location-hidden";
-    }
-
-    let content = "";
-    if (this.props.dug && this.props.mine) {
-      content = "G";
-    }
-
-    return <div className={className}>{content}</div>;
-  }
-}
+import Location from "./Location";
 
 export default class TaskResponse extends React.Component {
   constructor(props) {
@@ -92,6 +71,11 @@ export default class TaskResponse extends React.Component {
     this.props.player.stage.submit();
   };
 
+  handleDigSubmit = (event) => {
+    this.handleDig(event);
+    this.handleSubmit(event);
+  };
+
   renderSubmitted() {
     return (
       <div className="task-response">
@@ -111,24 +95,18 @@ export default class TaskResponse extends React.Component {
       return this.renderSubmitted();
     }
 
-    const discussion = <div>discussion</div>;
+    const discussion = (
+      <div>
+        discussion
+        <form onSubmit={this.handleSubmit}>
+          <button type="submit">Finish</button>
+        </form>
+      </div>
+    );
 
     const dig = (
       <>
-        <div className="world">
-          {this.state.world.map((row, k) => (
-            <div key={k} className="row">
-              {row.map((location) => (
-                <Location
-                  key={location["key"]}
-                  dug={location["dug"]}
-                  mine={location["mine"]}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-        <form onSubmit={this.handleSubmit}>
+        <form onSubmit={this.handleDigSubmit}>
           Row:
           <input
             type="text"
@@ -139,8 +117,7 @@ export default class TaskResponse extends React.Component {
             type="text"
             onChange={(event) => this.handleColChange(event.target.value)}
           />
-          <button onClick={(event) => this.handleDig(event)}>Dig</button>
-          <button type="submit">Finish</button>
+          <button type="submit">Submit</button>
         </form>
         {this.state.message}
       </>
