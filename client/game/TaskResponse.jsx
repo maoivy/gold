@@ -7,52 +7,37 @@ export default class TaskResponse extends React.Component {
     const { round } = this.props;
     this.state = {
       row: null,
-      column: null,
+      col: null,
       gold: null,
       world: round.get("world"),
       message: null,
     };
   }
 
-  componentDidUpdate = (prevProps) => {
-    const prevPlayer = prevProps.player;
-    const { player } = this.props;
-    if (player.get("knows") === true && prevPlayer.get("knows") === false) {
-      alert("Someone just told you the mine's location!");
-    }
-  };
+  // componentDidUpdate = (prevProps) => {
+  //   const prevPlayer = prevProps.player;
+  //   const { player } = this.props;
+  //   if (player.get("knows") === true && prevPlayer.get("knows") === false) {
+  //     alert("Someone just told you the mine's location!");
+  //   }
+  // };
 
   handleRowChange = (value) => {
     this.setState({ row: value });
   };
 
   handleColChange = (value) => {
-    this.setState({ column: value });
+    this.setState({ col: value });
   };
 
   handleDig = (event) => {
     event.preventDefault();
     const { round, player } = this.props;
-    const old_score = player.get("score");
-    if (
-      this.validateInput(this.state.row) &&
-      this.validateInput(this.state.column)
-    ) {
-      const updatedWorld = this.state.world;
-      updatedWorld[this.state.row][this.state.column]["dug"] = true;
-      this.setState({ world: updatedWorld });
-      if (
-        parseInt(this.state.row) === round.get("mineRow") &&
-        parseInt(this.state.column) === round.get("mineCol")
-      ) {
-        this.setState({ gold: true, message: "You found gold!" });
-        player.set("score", old_score + 1);
-      } else {
-        this.setState({ gold: false, message: "There's no gold here." });
-      }
-    } else {
-      this.setState({ message: "That's not a valid location!" });
-    }
+
+    player.set("location", {
+      row: parseInt(this.state.row),
+      col: parseInt(this.state.col),
+    });
   };
 
   validateInput = (input) => {
@@ -72,8 +57,16 @@ export default class TaskResponse extends React.Component {
   };
 
   handleDigSubmit = (event) => {
-    this.handleDig(event);
-    this.handleSubmit(event);
+    if (
+      this.validateInput(this.state.row) &&
+      this.validateInput(this.state.col)
+    ) {
+      this.handleDig(event);
+      this.handleSubmit(event);
+    } else {
+      event.preventDefault();
+      this.setState({ message: "That's not a valid location!" });
+    }
   };
 
   renderSubmitted() {
@@ -90,7 +83,6 @@ export default class TaskResponse extends React.Component {
   render() {
     const { player, stage } = this.props;
 
-    // If the player already submitted, don't show the slider or submit button
     if (player.stage.submitted) {
       return this.renderSubmitted();
     }

@@ -1,5 +1,11 @@
 import Empirica from "meteor/empirica:core";
 
+const ROWS = 10;
+const COLS = 10;
+const MINES = 5;
+const MAX_GOLD = 10;
+const REVEALED = 10;
+
 // onGameStart is triggered opnce per game before the game starts, and before
 // the first onRoundStart. It receives the game and list of all the players in
 // the game.
@@ -11,9 +17,9 @@ Empirica.onRoundStart((game, round) => {
   // generate the world
   let world = [];
   let worldSet = new Set();
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < ROWS; i++) {
     let row = [];
-    for (let j = 0; j < 10; j++) {
+    for (let j = 0; j < COLS; j++) {
       row.push({ revealed: false, mine: false, row: i, col: j });
       worldSet.add({ row: i, col: j });
     }
@@ -21,12 +27,13 @@ Empirica.onRoundStart((game, round) => {
   }
 
   // generate the mines (between 1 and 5)
-  const numMines = Math.floor(Math.random() * 4) + 1;
+  const numMines = Math.floor(Math.random() * (MINES - 1)) + 1;
   let mines = [];
   for (let i = 0; i < numMines; i++) {
-    let mineRow = Math.floor(Math.random() * 10);
-    let mineCol = Math.floor(Math.random() * 10);
-    mines.push({ row: mineRow, col: mineCol });
+    let mineRow = Math.floor(Math.random() * ROWS);
+    let mineCol = Math.floor(Math.random() * COLS);
+    let gold = Math.floor(Math.random() * MAX_GOLD);
+    mines.push({ row: mineRow, col: mineCol, gold: gold });
     worldSet.delete({ row: mineRow, col: mineCol });
     world[mineRow][mineCol]["mine"] = true;
   }
@@ -34,12 +41,12 @@ Empirica.onRoundStart((game, round) => {
   round.set("world", world);
 
   // reveal squares for each player
-  const numNormal = 100 - numMines;
+  const numNormal = ROWS * COLS - numMines;
   const normals = Array.from(worldSet);
 
   game.players.forEach((player) => {
     let revealed = new Set();
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < REVEALED; i++) {
       let showMine = Math.floor(Math.random()) < player.get("chance");
       let minesRemaining = mines.some((mine) => !revealed.has(mine));
 
@@ -59,16 +66,65 @@ Empirica.onRoundStart((game, round) => {
       revealed.add(square);
     }
     player.set("revealed", Array.from(revealed));
+    player.set("location", null);
   });
 });
 
 // onStageStart is triggered before each stage starts.
 // It receives the same options as onRoundStart, and the stage that is starting.
-Empirica.onStageStart((game, round, stage) => {});
+Empirica.onStageStart((game, round, stage) => {
+  console.log(round.get("mines"));
+});
+
+getGold = (gold, numPlayers) => {
+  return gold / numPlayers;
+};
 
 // onStageEnd is triggered after each stage.
 // It receives the same options as onRoundEnd, and the stage that just ended.
-Empirica.onStageEnd((game, round, stage) => {});
+Empirica.onStageEnd((game, round, stage) => {
+  if (stage.name === "dig") {
+    const mines = round.get("mines");
+    const mineIndices = new Set(
+      mines.map((mine) => mine.row * ROWS + mine.col)
+    );
+
+    // find how many players chose to dig at each mine
+    const mineChoices = {};
+    mines.forEach(
+      (mine) =>
+        (mineChoices[mine.row * ROWS + mine.col] = {
+          players: [],
+          gold: mine.gold,
+        })
+    );
+
+    game.players.forEach((player, k) => {
+      let location = player.get("location");
+      if (location) {
+        let locationIndex = location.row * ROWS + location.col;
+        if (mineIndices.has(locationIndex)) {
+          mineChoices[locationIndex]["players"].push(k);
+        }
+      }
+    });
+
+    // distribute gold accordingly
+
+    Object.values(mineChoices).forEach((data) => {
+      console.log(data);
+      let players = data.players;
+      let totalGold = data.gold;
+      if (players.length !== 0) {
+        let goldReceived = getGold(totalGold, players.length);
+        players.forEach((playerIndex) => {
+          let currentScore = game.players[playerIndex].get("score");
+          game.players[playerIndex].set("score", currentScore + goldReceived);
+        });
+      }
+    });
+  }
+});
 
 // onRoundEnd is triggered after each round.
 // It receives the same options as onGameEnd, and the round that just ended.
