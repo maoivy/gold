@@ -117,9 +117,8 @@ export default class TaskResponse extends React.Component {
 
     const reveal = (
       <div>
-        reveal{" "}
         <form onSubmit={this.handleSubmit}>
-          <button type="submit">Finish</button>
+          <button type="submit">Next</button>
         </form>
       </div>
     );

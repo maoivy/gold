@@ -1,10 +1,10 @@
 import Empirica from "meteor/empirica:core";
 
-const ROWS = 10;
-const COLS = 10;
+export const ROWS = 10;
+export const COLS = 10;
 const MINES = 5;
 const MAX_GOLD = 10;
-const REVEALED = 10;
+export const REVEALED = 10;
 
 // onGameStart is triggered opnce per game before the game starts, and before
 // the first onRoundStart. It receives the game and list of all the players in
@@ -68,6 +68,9 @@ Empirica.onRoundStart((game, round) => {
     player.set("revealed", Array.from(revealed));
     player.set("location", null);
   });
+
+  // also reset previous data
+  round.set("mineChoices", null);
 });
 
 // onStageStart is triggered before each stage starts.
@@ -98,7 +101,6 @@ Empirica.onStageEnd((game, round, stage) => {
           gold: mine.gold,
         })
     );
-
     game.players.forEach((player, k) => {
       let location = player.get("location");
       if (location) {
@@ -108,9 +110,9 @@ Empirica.onStageEnd((game, round, stage) => {
         }
       }
     });
+    round.set("mineChoices", mineChoices);
 
     // distribute gold accordingly
-
     Object.values(mineChoices).forEach((data) => {
       console.log(data);
       let players = data.players;

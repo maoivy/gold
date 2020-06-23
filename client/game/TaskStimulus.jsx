@@ -2,6 +2,8 @@ import React from "react";
 
 import Location from "./Location";
 
+const ROWS = 10;
+
 export default class TaskStimulus extends React.Component {
   render() {
     const { round, stage, player } = this.props;
@@ -34,9 +36,45 @@ export default class TaskStimulus extends React.Component {
       </div>
     );
 
+    const location = player.get("location");
+    const mineChoices = round.get("mineChoices");
+
     const discussion = <>{worldMap}</>;
+
     const dig = <>{worldMap}</>;
-    const reveal = <p>reveal</p>;
+
+    let reveal = null;
+    if (stage.name === "reveal") {
+      if (location) {
+        let foundMine = false;
+        let locationIndex = location.row * ROWS + location.col;
+        let otherPlayers = null;
+        let totalGold = null;
+        if (mineChoices[locationIndex]) {
+          foundMine = true;
+          otherPlayers = mineChoices[locationIndex]["players"].length - 1;
+          totalGold = mineChoices[locationIndex]["gold"];
+        }
+        reveal = (
+          <>
+            <p>
+              You chose to dig at row {location.row}, column {location.col}.
+            </p>
+            {foundMine ? (
+              <p>
+                You found a mine! There was {totalGold} total gold at the mine,
+                and there were {otherPlayers} other players also digging at the
+                same mine.
+              </p>
+            ) : (
+              <p>There's no mine here, so your score stays the same.</p>
+            )}
+          </>
+        );
+      } else {
+        reveal = <p>You didn't dig anywhere!</p>;
+      }
+    }
 
     return (
       <div className="task-stimulus">
