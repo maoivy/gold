@@ -62,6 +62,15 @@
 
     .world {
       display: flex;
+      flex-direction: column;
+    }
+
+    .row {
+      display: flex;
+    }
+
+    .col-labels {
+      display: flex;
     }
 
     .location {
@@ -77,8 +86,12 @@
       background: #eee;
     }
 
-    .location-dug {
+    .location-revealed {
       background: #fff;
+    }
+
+    .location-label {
+      border: none !important;
     }
 
     .task-response {

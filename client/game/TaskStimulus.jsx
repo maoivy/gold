@@ -17,8 +17,19 @@ export default class TaskStimulus extends React.Component {
 
     const worldMap = (
       <div className="world">
+        <div className="col-labels">
+          <div className="location location-label"></div>
+          {[...Array(ROWS).keys()].map((k) => (
+            <div key={`col${k}`} className="location location-label">
+              {k}
+            </div>
+          ))}
+        </div>
         {world.map((row, k) => (
           <div key={k} className="row">
+            <div key={`row${k}`} className="location location-label">
+              {k}
+            </div>
             {row.map((location) => {
               let coords = { row: location["row"], col: location["col"] };
               let sum = location["row"] * 10 + location["col"];

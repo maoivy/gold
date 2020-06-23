@@ -81,15 +81,17 @@ export default class TaskResponse extends React.Component {
   }
 
   render() {
-    const { player, stage } = this.props;
+    const { game, player, stage } = this.props;
 
     if (player.stage.submitted) {
       return this.renderSubmitted();
     }
 
+    const otherPlayers = _.reject(game.players, (p) => p._id === player._id);
+
     const discussion = (
       <div>
-        discussion
+        Send a message to the other players!
         <form onSubmit={this.handleSubmit}>
           <button type="submit">Finish</button>
         </form>
