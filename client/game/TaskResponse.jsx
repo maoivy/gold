@@ -12,7 +12,6 @@ export default class TaskResponse extends React.Component {
       col: null,
       message: null,
       player: this.otherPlayers[0]._id,
-      sent: new Set(),
     };
   }
 
@@ -73,6 +72,8 @@ export default class TaskResponse extends React.Component {
 
   handleSend = (event) => {
     event.preventDefault();
+    const { game, player } = this.props;
+    const sent = player.get("sent");
     if (
       !this.validateInput(this.state.row) ||
       !this.validateInput(this.state.col)
@@ -80,12 +81,11 @@ export default class TaskResponse extends React.Component {
       this.setState({ message: "That's not a valid location!" });
     } else if (!this.state.player) {
       this.setState({ message: "Select a player." });
-    } else if (this.state.sent.has(this.state.player)) {
+    } else if (sent.includes(this.state.player)) {
       this.setState({
         message: "You've already sent a message to this player.",
       });
     } else {
-      const { game, player } = this.props;
       const message = {
         author: player,
         row: this.state.row,
@@ -98,12 +98,12 @@ export default class TaskResponse extends React.Component {
           let messages = player.get("messages");
           messages.push(message);
           player.set("messages", messages);
+
+          sent.push(this.state.player);
+          player.set("sent", sent);
         }
       });
-      this.setState((prevState) => ({
-        message: "Your message was sent!",
-        sent: prevState.sent.add(this.state.player),
-      }));
+      this.setState({ message: "Your message was sent!" });
     }
   };
 
@@ -128,7 +128,7 @@ export default class TaskResponse extends React.Component {
     const discussion = (
       <div>
         Send a message to the other players!
-        <form>
+        <form onSubmit={this.handleSubmit}>
           <div>
             Sending to:
             <select
@@ -155,6 +155,7 @@ export default class TaskResponse extends React.Component {
             onChange={(event) => this.handleColChange(event.target.value)}
           />
           <button onClick={(event) => this.handleSend(event)}>Send</button>
+          <button type="submit">Finish</button>
           {this.state.message}
         </form>
       </div>

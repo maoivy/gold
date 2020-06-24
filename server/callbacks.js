@@ -69,9 +69,9 @@ Empirica.onRoundStart((game, round) => {
     // reset previous data for the player
     player.set("location", null);
     player.set("messages", []);
+    player.set("sent", []);
   });
 
-  // also reset previous data for the round
   round.set("mineChoices", null);
 });
 

@@ -2,6 +2,14 @@ import React from "react";
 
 import Timer from "./Timer.jsx";
 
+// import red from "../../public/red.png";
+// import blue from "../../public/blue.png";
+
+// const AVATAR_MAP = {
+//   red: red,
+//   blue: blue,
+// };
+
 export default class PlayerProfile extends React.Component {
   renderProfile() {
     const { player } = this.props;
