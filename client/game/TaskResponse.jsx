@@ -10,20 +10,10 @@ export default class TaskResponse extends React.Component {
     this.otherPlayers = _.reject(game.players, (p) => p._id === player._id);
 
     this.state = {
-      row: null,
-      col: null,
-      message: null,
       player: this.otherPlayers[0]._id,
+      selected: new Set(),
     };
   }
-
-  // componentDidUpdate = (prevProps) => {
-  //   const prevPlayer = prevProps.player;
-  //   const { player } = this.props;
-  //   if (player.get("knows") === true && prevPlayer.get("knows") === false) {
-  //     alert("Someone just told you the mine's location!");
-  //   }
-  // };
 
   handleRowChange = (value) => {
     this.setState({ row: value });
@@ -35,41 +25,16 @@ export default class TaskResponse extends React.Component {
 
   handleDig = (event) => {
     event.preventDefault();
-    const { round, player } = this.props;
-
-    player.set("location", {
-      row: parseInt(this.state.row),
-      col: parseInt(this.state.col),
-    });
-  };
-
-  validateInput = (input) => {
-    const inputInt = parseInt(input);
-    if (!Number.isInteger(inputInt)) {
-      return false;
-    } else if (inputInt < 0 || inputInt > 19) {
-      return false;
-    } else {
-      return true;
+    if (this.state.selected !== new Set()) {
+      const { player } = this.props;
+      player.set("location", this.state.selected);
+      player.stage.submit();
     }
   };
 
   handleSubmit = (event) => {
     event.preventDefault();
     this.props.player.stage.submit();
-  };
-
-  handleDigSubmit = (event) => {
-    if (
-      this.validateInput(this.state.row) &&
-      this.validateInput(this.state.col)
-    ) {
-      this.handleDig(event);
-      this.handleSubmit(event);
-    } else {
-      event.preventDefault();
-      this.setState({ message: "That's not a valid location!" });
-    }
   };
 
   handleSend = (event) => {
@@ -85,20 +50,94 @@ export default class TaskResponse extends React.Component {
       this.setState({ message: "Select a player." });
     } else {
       let message;
+      let index = parseInt(this.state.row) * ROWS + parseInt(this.state.col);
       if (sending[this.state.player]) {
         message = sending[this.state.player];
-        message.squares.push({ row: this.state.row, col: this.state.col });
+        message.squares.push(index);
       } else {
         message = {
           from: player._id,
           to: this.state.player,
-          squares: [{ row: this.state.row, col: this.state.col }],
+          squares: [index],
         };
       }
       sending[this.state.player] = message;
       player.set("sending", sending);
       this.setState({ message: "Your message was sent!" });
     }
+  };
+
+  toggleDiscussionSelect = (location) => {
+    let selected = this.state.selected;
+    if (selected.has(location)) {
+      selected.delete(location);
+    } else {
+      selected.add(location);
+    }
+    this.setState({ selected });
+  };
+
+  handleDigSelect = (location) => {
+    this.setState({ selected: location });
+  };
+
+  allowSelect = (location) => {
+    const { stage, player } = this.props;
+    if (stage.name === "dig") {
+      return true;
+    } else if (stage.name === "discussion") {
+      const revealed = new Set(player.get("revealed"));
+      return revealed.has(location);
+    }
+  };
+
+  renderMap = (handleSquareClick, selectedIsSet) => {
+    const { game, player, stage, round } = this.props;
+    const world = round.get("world");
+    const revealed = new Set(player.get("revealed"));
+    const receiving = new Set(player.get("receiving"));
+
+    const worldMap = (
+      <div className="world">
+        <div className="col-labels">
+          <div className="location location-label"></div>
+          {[...Array(ROWS).keys()].map((k) => (
+            <div key={`col${k}`} className="location location-label">
+              {k}
+            </div>
+          ))}
+        </div>
+        {world.map((row, k) => (
+          <div key={k} className="row">
+            <div key={`row${k}`} className="location location-label">
+              {k}
+            </div>
+            {row.map((location) => {
+              let locationIndex = location["location"];
+              let shown =
+                revealed.has(locationIndex) || receiving.has(locationIndex);
+
+              return (
+                <Location
+                  key={`location${locationIndex}`}
+                  location={locationIndex}
+                  revealed={shown}
+                  selectable={this.allowSelect(locationIndex)}
+                  selected={
+                    selectedIsSet
+                      ? this.state.selected.has(locationIndex)
+                      : this.state.selected === locationIndex
+                  }
+                  mine={location["mine"]}
+                  handleSelect={handleSquareClick}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+    return worldMap;
   };
 
   renderSubmitted() {
@@ -119,98 +158,21 @@ export default class TaskResponse extends React.Component {
       return this.renderSubmitted();
     }
 
-    const world = round.get("world");
-    const revealed = new Set(player.get("revealed"));
-
-    const worldMap = (
-      <div className="world">
-        <div className="col-labels">
-          <div className="location location-label"></div>
-          {[...Array(ROWS).keys()].map((k) => (
-            <div key={`col${k}`} className="location location-label">
-              {k}
-            </div>
-          ))}
-        </div>
-        {world.map((row, k) => (
-          <div key={k} className="row">
-            <div key={`row${k}`} className="location location-label">
-              {k}
-            </div>
-            {row.map((location) => {
-              let locationIndex = location["location"];
-
-              return (
-                <Location
-                  key={`location${locationIndex}`}
-                  location={locationIndex}
-                  revealed={revealed.has(locationIndex)}
-                  mine={location["mine"]}
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    );
-
     const discussion = (
       <div>
-        {worldMap}
-        Send a message to the other players!
-        <form onSubmit={this.handleSubmit}>
-          <div>
-            Sending to:
-            <select
-              value={this.state.player}
-              onChange={(event) =>
-                this.setState({ player: event.target.value })
-              }
-            >
-              {this.otherPlayers.map((player) => (
-                <option key={player._id} value={player._id}>
-                  {player.id}
-                </option>
-              ))}
-            </select>
-          </div>
-          Row:
-          <input
-            type="text"
-            onChange={(event) => this.handleRowChange(event.target.value)}
-          />
-          Column:
-          <input
-            type="text"
-            onChange={(event) => this.handleColChange(event.target.value)}
-          />
-          <button onClick={(event) => this.handleSend(event)}>Send</button>
-          <button type="submit">Finish</button>
-          {this.state.message}
-        </form>
+        {this.renderMap(this.toggleDiscussionSelect, true)}
+        <button onClick={this.handleSubmit}>Finish</button>
       </div>
     );
 
     const dig = (
-      <>
-        <form onSubmit={this.handleDigSubmit}>
-          Row:
-          <input
-            type="text"
-            onChange={(event) => this.handleRowChange(event.target.value)}
-          />
-          Column:
-          <input
-            type="text"
-            onChange={(event) => this.handleColChange(event.target.value)}
-          />
-          <button type="submit">Submit</button>
-        </form>
-        {this.state.message}
-      </>
+      <div>
+        {this.renderMap(this.toggleDigSelect, false)}
+        <button onClick={this.handleDig}>Finish</button>
+      </div>
     );
 
-    const reveal = (
+    const results = (
       <div>
         <form onSubmit={this.handleSubmit}>
           <button type="submit">Next</button>
@@ -222,7 +184,7 @@ export default class TaskResponse extends React.Component {
       <div className="task-response">
         {stage.name === "discussion" && discussion}
         {stage.name === "dig" && dig}
-        {stage.name === "reveal" && reveal}
+        {stage.name === "results" && results}
       </div>
     );
   }

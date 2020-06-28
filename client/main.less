@@ -75,8 +75,8 @@
 
     .location {
       border: 1px solid #ddd;
-      height: 1.5em;
-      width: 1.5em;
+      height: 3em;
+      width: 3em;
       display: flex;
       align-items: center;
       justify-content: space-around;
@@ -92,6 +92,14 @@
 
     .location-label {
       border: none !important;
+    }
+
+    .location-selectable:hover {
+      cursor: pointer !important;
+    }
+
+    .location-selected {
+      border: 1px solid red;
     }
 
     .task-response {

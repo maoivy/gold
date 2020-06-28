@@ -31,8 +31,8 @@ export default class TaskStimulus extends React.Component {
 
     const location = player.get("location");
     const mineChoices = round.get("mineChoices");
-    let reveal = null;
-    if (stage.name === "reveal") {
+    let results = null;
+    if (stage.name === "results") {
       if (location) {
         let foundMine = false;
         let locationIndex = location.row * ROWS + location.col;
@@ -45,7 +45,7 @@ export default class TaskStimulus extends React.Component {
           totalGold = mineChoices[locationIndex]["gold"];
           goldReceived = mineChoices[locationIndex]["distributed"];
         }
-        reveal = (
+        results = (
           <>
             <p>
               You chose to dig at row {location.row}, column {location.col}.
@@ -62,7 +62,7 @@ export default class TaskStimulus extends React.Component {
           </>
         );
       } else {
-        reveal = <p>You didn't dig anywhere!</p>;
+        results = <p>You didn't dig anywhere!</p>;
       }
     }
 
@@ -70,7 +70,7 @@ export default class TaskStimulus extends React.Component {
       <div className="task-stimulus">
         {stage.name === "discussion" && discussion}
         {stage.name === "dig" && dig}
-        {stage.name === "reveal" && reveal}
+        {stage.name === "results" && results}
       </div>
     );
   }

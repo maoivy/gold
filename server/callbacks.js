@@ -103,7 +103,7 @@ Empirica.onStageEnd((game, round, stage) => {
       let sending = player.get("sending");
       Object.values(sending).forEach((data) => {
         let { to, from, squares } = data;
-        messages[to].push([...squares]);
+        messages[to].push(...squares);
       });
     });
 
@@ -129,10 +129,8 @@ Empirica.onStageEnd((game, round, stage) => {
     );
     game.players.forEach((player, k) => {
       let location = player.get("location");
-      if (location) {
-        if (mineSet.has(location)) {
-          mineChoices[location]["players"].push(k);
-        }
+      if (location && mineSet.has(location)) {
+        mineChoices[location]["players"].push(k);
       }
     });
 

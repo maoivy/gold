@@ -30,17 +30,17 @@ Empirica.gameInit((game) => {
     round.addStage({
       name: "discussion",
       displayName: "Discussion",
-      durationInSeconds: 600,
+      durationInSeconds: 3600,
     });
     round.addStage({
       name: "dig",
       displayName: "Dig",
-      durationInSeconds: 120,
+      durationInSeconds: 3600,
     });
     round.addStage({
-      name: "reveal",
-      displayName: "Reveal",
-      durationInSeconds: 15,
+      name: "results",
+      displayName: "Results",
+      durationInSeconds: 3600,
     });
   });
 });
