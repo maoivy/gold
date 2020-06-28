@@ -91,6 +91,25 @@ getGold = (gold, numPlayers) => {
 Empirica.onStageEnd((game, round, stage) => {
   if (stage.name === "discussion") {
     // after the discussion round, consolidate the players' messages and send them
+
+    // initialize the dictionary of messages
+    let messages = {};
+    game.players.forEach((player) => (messages[player._id] = []));
+
+    // consolidate the messages
+    game.players.forEach((player) => {
+      let sending = player.get("sending");
+      Object.values(sending).forEach((data) => {
+        let { to, from, squares } = data;
+        messages[to].push({ from, squares });
+      });
+    });
+
+    // send the messages to their recipients
+    game.players.forEach((player) =>
+      player.set("receiving", messages[player._id])
+    );
+    round.set("messages", messages);
   } else if (stage.name === "dig") {
     // after the dig round, consolidate the players' choices and distribute gold
     const mines = round.get("mines");

@@ -88,7 +88,8 @@ export default class TaskResponse extends React.Component {
         message.squares.push({ row: this.state.row, col: this.state.col });
       } else {
         message = {
-          from: player,
+          from: player._id,
+          to: this.state.player,
           squares: [{ row: this.state.row, col: this.state.col }],
         };
       }
