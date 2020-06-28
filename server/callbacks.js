@@ -68,10 +68,11 @@ Empirica.onRoundStart((game, round) => {
     player.set("revealed", Array.from(revealed));
     // reset previous data for the player
     player.set("location", null);
-    player.set("messages", []);
-    player.set("sent", []);
+    player.set("receiving", []);
+    player.set("sending", new Object());
   });
 
+  round.set("messages", []);
   round.set("mineChoices", null);
 });
 
@@ -88,7 +89,10 @@ getGold = (gold, numPlayers) => {
 // onStageEnd is triggered after each stage.
 // It receives the same options as onRoundEnd, and the stage that just ended.
 Empirica.onStageEnd((game, round, stage) => {
-  if (stage.name === "dig") {
+  if (stage.name === "discussion") {
+    // after the discussion round, consolidate the players' messages and send them
+  } else if (stage.name === "dig") {
+    // after the dig round, consolidate the players' choices and distribute gold
     const mines = round.get("mines");
     const mineIndices = new Set(
       mines.map((mine) => mine.row * ROWS + mine.col)

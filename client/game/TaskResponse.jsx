@@ -73,7 +73,7 @@ export default class TaskResponse extends React.Component {
   handleSend = (event) => {
     event.preventDefault();
     const { game, player } = this.props;
-    const sent = player.get("sent");
+    const sending = { ...player.get("sending") };
     if (
       !this.validateInput(this.state.row) ||
       !this.validateInput(this.state.col)
@@ -81,28 +81,19 @@ export default class TaskResponse extends React.Component {
       this.setState({ message: "That's not a valid location!" });
     } else if (!this.state.player) {
       this.setState({ message: "Select a player." });
-    } else if (sent.includes(this.state.player)) {
-      this.setState({
-        message: "You've already sent a message to this player.",
-      });
     } else {
-      const message = {
-        author: player,
-        row: this.state.row,
-        col: this.state.col,
-        gold: true,
-      };
-
-      game.players.forEach((player) => {
-        if (player._id === this.state.player) {
-          let messages = player.get("messages");
-          messages.push(message);
-          player.set("messages", messages);
-
-          sent.push(this.state.player);
-          player.set("sent", sent);
-        }
-      });
+      let message;
+      if (sending[this.state.player]) {
+        message = sending[this.state.player];
+        message.squares.push({ row: this.state.row, col: this.state.col });
+      } else {
+        message = {
+          from: player,
+          squares: [{ row: this.state.row, col: this.state.col }],
+        };
+      }
+      sending[this.state.player] = message;
+      player.set("sending", sending);
       this.setState({ message: "Your message was sent!" });
     }
   };

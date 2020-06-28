@@ -13,15 +13,16 @@ Empirica.gameInit((game) => {
   game.players.forEach((player, i) => {
     // player.set("avatar", `/avatars/jdenticon/${player._id}`);
     player.set("score", 0);
-    if (i % 2 === 0) {
-      player.set("chance", 0.05);
-      player.set("network", "red");
-      player.set("avatar", "red.png");
-    } else {
-      player.set("chance", 0.1);
-      player.set("network", "blue");
-      player.set("avatar", "blue.png");
-    }
+    player.set("chance", 0.05);
+    player.set("network", "red");
+    player.set("avatar", "red.png");
+    // if (i % 2 === 0) {
+
+    // } else {
+    //   player.set("chance", 0.1);
+    //   player.set("network", "blue");
+    //   player.set("avatar", "blue.png");
+    // }
   });
 
   _.times(10, (i) => {
@@ -34,7 +35,7 @@ Empirica.gameInit((game) => {
     round.addStage({
       name: "dig",
       displayName: "Dig",
-      durationInSeconds: 60,
+      durationInSeconds: 120,
     });
     round.addStage({
       name: "reveal",

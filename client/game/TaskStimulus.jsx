@@ -52,7 +52,7 @@ export default class TaskStimulus extends React.Component {
       <>
         <p>Here are the squares we revealed to you.</p>
         {worldMap}
-        {messages.length !== 0 ? (
+        {/* {messages.length !== 0 ? (
           messages.map((message) => (
             <p>
               {message.author.id} wants to tell you that there is a mine at row{" "}
@@ -61,7 +61,7 @@ export default class TaskStimulus extends React.Component {
           ))
         ) : (
           <p>You haven't received any messages from other players yet.</p>
-        )}
+        )} */}
       </>
     );
 
