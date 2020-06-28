@@ -14,16 +14,6 @@ export default class TaskStimulus extends React.Component {
     const discussion = (
       <>
         <p>Here are the squares we revealed to you.</p>
-        {/* {messages.length !== 0 ? (
-          messages.map((message) => (
-            <p>
-              {message.author.id} wants to tell you that there is a mine at row{" "}
-              {message.row} and column {message.col}.
-            </p>
-          ))
-        ) : (
-          <p>You haven't received any messages from other players yet.</p>
-        )} */}
       </>
     );
 

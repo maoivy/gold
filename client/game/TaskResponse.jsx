@@ -161,6 +161,9 @@ export default class TaskResponse extends React.Component {
     const discussion = (
       <div>
         {this.renderMap(this.toggleDiscussionSelect, true)}
+        <button onClick={() => this.setState({ selected: new Set() })}>
+          Reset selection
+        </button>
         <button onClick={this.handleSubmit}>Finish</button>
       </div>
     );
