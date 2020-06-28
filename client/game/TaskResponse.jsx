@@ -1,6 +1,8 @@
 import React from "react";
 import Location from "./Location";
 
+const ROWS = 10;
+
 export default class TaskResponse extends React.Component {
   constructor(props) {
     super(props);
@@ -111,14 +113,54 @@ export default class TaskResponse extends React.Component {
   }
 
   render() {
-    const { game, player, stage } = this.props;
+    const { game, player, stage, round } = this.props;
 
     if (player.stage.submitted) {
       return this.renderSubmitted();
     }
 
+    const world = round.get("world");
+    const revealed = new Set(
+      player
+        .get("revealed")
+        .map((location) => location["row"] * 10 + location["col"])
+    );
+
+    const worldMap = (
+      <div className="world">
+        <div className="col-labels">
+          <div className="location location-label"></div>
+          {[...Array(ROWS).keys()].map((k) => (
+            <div key={`col${k}`} className="location location-label">
+              {k}
+            </div>
+          ))}
+        </div>
+        {world.map((row, k) => (
+          <div key={k} className="row">
+            <div key={`row${k}`} className="location location-label">
+              {k}
+            </div>
+            {row.map((location) => {
+              let coords = { row: location["row"], col: location["col"] };
+              let sum = location["row"] * 10 + location["col"];
+
+              return (
+                <Location
+                  key={sum}
+                  revealed={revealed.has(sum)}
+                  mine={location["mine"]}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+
     const discussion = (
       <div>
+        {worldMap}
         Send a message to the other players!
         <form onSubmit={this.handleSubmit}>
           <div>

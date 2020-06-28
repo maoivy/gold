@@ -101,7 +101,7 @@ Empirica.onStageEnd((game, round, stage) => {
       let sending = player.get("sending");
       Object.values(sending).forEach((data) => {
         let { to, from, squares } = data;
-        messages[to].push({ from, squares });
+        messages[to].push([...squares]);
       });
     });
 
