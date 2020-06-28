@@ -120,11 +120,7 @@ export default class TaskResponse extends React.Component {
     }
 
     const world = round.get("world");
-    const revealed = new Set(
-      player
-        .get("revealed")
-        .map((location) => location["row"] * 10 + location["col"])
-    );
+    const revealed = new Set(player.get("revealed"));
 
     const worldMap = (
       <div className="world">
@@ -142,13 +138,13 @@ export default class TaskResponse extends React.Component {
               {k}
             </div>
             {row.map((location) => {
-              let coords = { row: location["row"], col: location["col"] };
-              let sum = location["row"] * 10 + location["col"];
+              let locationIndex = location["location"];
 
               return (
                 <Location
-                  key={sum}
-                  revealed={revealed.has(sum)}
+                  key={`location${locationIndex}`}
+                  location={locationIndex}
+                  revealed={revealed.has(locationIndex)}
                   mine={location["mine"]}
                 />
               );

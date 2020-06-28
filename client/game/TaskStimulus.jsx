@@ -9,49 +9,11 @@ export default class TaskStimulus extends React.Component {
     const { round, stage, player } = this.props;
 
     const world = round.get("world");
-    const revealed = new Set(
-      player
-        .get("revealed")
-        .map((location) => location["row"] * 10 + location["col"])
-    );
-
-    // const worldMap = (
-    //   <div className="world">
-    //     <div className="col-labels">
-    //       <div className="location location-label"></div>
-    //       {[...Array(ROWS).keys()].map((k) => (
-    //         <div key={`col${k}`} className="location location-label">
-    //           {k}
-    //         </div>
-    //       ))}
-    //     </div>
-    //     {world.map((row, k) => (
-    //       <div key={k} className="row">
-    //         <div key={`row${k}`} className="location location-label">
-    //           {k}
-    //         </div>
-    //         {row.map((location) => {
-    //           let coords = { row: location["row"], col: location["col"] };
-    //           let sum = location["row"] * 10 + location["col"];
-
-    //           return (
-    //             <Location
-    //               key={sum}
-    //               revealed={revealed.has(sum)}
-    //               mine={location["mine"]}
-    //             />
-    //           );
-    //         })}
-    //       </div>
-    //     ))}
-    //   </div>
-    // );
 
     const messages = player.get("messages");
     const discussion = (
       <>
         <p>Here are the squares we revealed to you.</p>
-        {/* {worldMap} */}
         {/* {messages.length !== 0 ? (
           messages.map((message) => (
             <p>

@@ -1,10 +1,10 @@
 import Empirica from "meteor/empirica:core";
 
-export const ROWS = 10;
-export const COLS = 10;
+const ROWS = 10;
+const COLS = 10;
 const MINES = 5;
 const MAX_GOLD = 10;
-export const REVEALED = 10;
+const REVEALED = 10;
 
 // onGameStart is triggered opnce per game before the game starts, and before
 // the first onRoundStart. It receives the game and list of all the players in
@@ -20,8 +20,9 @@ Empirica.onRoundStart((game, round) => {
   for (let i = 0; i < ROWS; i++) {
     let row = [];
     for (let j = 0; j < COLS; j++) {
-      row.push({ revealed: false, mine: false, row: i, col: j });
-      worldSet.add({ row: i, col: j });
+      let location = i * ROWS + j;
+      row.push({ revealed: false, mine: false, location: location });
+      worldSet.add(location);
     }
     world.push(row);
   }
@@ -32,9 +33,10 @@ Empirica.onRoundStart((game, round) => {
   for (let i = 0; i < numMines; i++) {
     let mineRow = Math.floor(Math.random() * ROWS);
     let mineCol = Math.floor(Math.random() * COLS);
-    let gold = Math.floor(Math.random() * MAX_GOLD);
-    mines.push({ row: mineRow, col: mineCol, gold: gold });
-    worldSet.delete({ row: mineRow, col: mineCol });
+    let gold = Math.floor(Math.random() * (MAX_GOLD - 1)) + 1;
+    let location = mineRow * ROWS + mineCol;
+    mines.push({ location, gold });
+    worldSet.delete(location);
     world[mineRow][mineCol]["mine"] = true;
   }
   round.set("mines", mines);
@@ -48,14 +50,14 @@ Empirica.onRoundStart((game, round) => {
     let revealed = new Set();
     for (let i = 0; i < REVEALED; i++) {
       let showMine = Math.floor(Math.random()) < player.get("chance");
-      let minesRemaining = mines.some((mine) => !revealed.has(mine));
+      let minesRemaining = mines.some((mine) => !revealed.has(mine.location));
 
       if (showMine && minesRemaining) {
         let index = Math.floor(Math.random() * numMines);
-        while (revealed.has(mines[index])) {
+        while (revealed.has(mines[index]["location"])) {
           index = Math.floor(Math.random() * numMines);
         }
-        square = mines[index];
+        square = mines[index]["location"];
       } else {
         let index = Math.floor(Math.random() * numNormal);
         while (revealed.has(normals[index])) {
@@ -113,15 +115,13 @@ Empirica.onStageEnd((game, round, stage) => {
   } else if (stage.name === "dig") {
     // after the dig round, consolidate the players' choices and distribute gold
     const mines = round.get("mines");
-    const mineIndices = new Set(
-      mines.map((mine) => mine.row * ROWS + mine.col)
-    );
+    const mineSet = new Set(mines);
 
     // find how many players chose to dig at each mine
     const mineChoices = {};
     mines.forEach(
       (mine) =>
-        (mineChoices[mine.row * ROWS + mine.col] = {
+        (mineChoices[mine.location] = {
           players: [],
           gold: mine.gold,
           distributed: null,
@@ -130,9 +130,8 @@ Empirica.onStageEnd((game, round, stage) => {
     game.players.forEach((player, k) => {
       let location = player.get("location");
       if (location) {
-        let locationIndex = location.row * ROWS + location.col;
-        if (mineIndices.has(locationIndex)) {
-          mineChoices[locationIndex]["players"].push(k);
+        if (mineSet.has(location)) {
+          mineChoices[location]["players"].push(k);
         }
       }
     });
