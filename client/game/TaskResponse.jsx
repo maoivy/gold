@@ -14,7 +14,7 @@ export default class TaskResponse extends React.Component {
 
     this.state = {
       selected: new Set(),
-      hover: new Set(),
+      hovered: new Set(),
     };
   }
 
@@ -36,7 +36,21 @@ export default class TaskResponse extends React.Component {
     }
     sending[recipient] = message;
     player.set("sending", sending);
-    this.setState({ message: "Your message was sent!" });
+  };
+
+  handleRemove = (recipient) => {
+    const { game, player } = this.props;
+    const sending = player.get("sending");
+
+    if (sending[recipient]) {
+      let squares = sending[recipient]["squares"];
+      console.log(squares);
+      squares = _.reject(squares, (location) =>
+        this.state.selected.has(location)
+      );
+      sending[recipient]["squares"] = squares;
+      player.set("sending", sending);
+    }
   };
 
   handleCancelSend = (recipient) => {
@@ -46,6 +60,16 @@ export default class TaskResponse extends React.Component {
       delete sending[recipient];
       player.set("sending", sending);
     }
+  };
+
+  handlePlayerSelectHover = (recipient) => {
+    const { player } = this.props;
+    const sending = player.get("sending");
+    this.setState({ hovered: new Set(sending[recipient]["squares"]) });
+  };
+
+  handleHoverEnd = () => {
+    this.setState({ hovered: new Set() });
   };
 
   allowSelect = (location) => {
@@ -124,6 +148,7 @@ export default class TaskResponse extends React.Component {
                   revealed={shown}
                   selectable={this.allowSelect(locationIndex)}
                   selected={selected}
+                  hovered={this.state.hovered.has(locationIndex)}
                   mine={location["mine"]}
                   handleSelect={handleSquareClick}
                   terrain={location["terrain"]}
@@ -156,51 +181,89 @@ export default class TaskResponse extends React.Component {
     }
 
     const sending = player.get("sending");
-    const canSend = this.state.selected.size !== 0;
-    const playerSelect = this.otherPlayers.map((player) => (
-      <div key={player._id} className="player-select-player">
-        <img src={player.get("avatar")} className="player-select-avatar" />
-        {player.id}
-        {sending[player._id] ? (
-          <div>
-            {canSend ? (
-              <button
-                className="send-btn"
-                onClick={() => this.handleSend(player._id)}
-              >
-                Add selected squares
+    const hasSelection = this.state.selected.size !== 0;
+    const playerSelect = this.otherPlayers.map((player) => {
+      let sendButton = hasSelection ? (
+        <button
+          className="send-btn"
+          onClick={() => this.handleSend(player._id)}
+        >
+          Send selected squares
+        </button>
+      ) : (
+        <button
+          className="send-btn send-btn-disabled"
+          aria-disabled="true"
+          disabled
+        >
+          Send selected squares
+        </button>
+      );
+
+      let sendingSet = new Set(sending[player._id]["squares"]);
+      let canAdd =
+        hasSelection &&
+        [...this.state.selected].some((location) => !sendingSet.has(location));
+      let addButton = canAdd ? (
+        <button
+          className="send-btn"
+          onClick={() => this.handleSend(player._id)}
+        >
+          Add selected squares
+        </button>
+      ) : (
+        <button
+          className="send-btn send-btn-disabled"
+          aria-disabled="true"
+          disabled
+        >
+          Add selected squares
+        </button>
+      );
+
+      let canRemove =
+        hasSelection &&
+        [...this.state.selected].every((location) => sendingSet.has(location));
+      let removeButton = canRemove ? (
+        <button
+          className="send-btn"
+          onClick={() => this.handleRemove(player._id)}
+        >
+          Remove selected squares
+        </button>
+      ) : (
+        <button
+          className="send-btn send-btn-disabled"
+          aria-disabled="true"
+          disabled
+        >
+          Remove selected squares
+        </button>
+      );
+
+      return (
+        <div
+          key={player._id}
+          className="player-select-player"
+          onMouseOver={() => this.handlePlayerSelectHover(player._id)}
+          onMouseOut={() => this.handleHoverEnd()}
+        >
+          <img src={player.get("avatar")} className="player-select-avatar" />
+          {player.id}
+          {sending[player._id] ? (
+            <div>
+              {addButton}
+              {removeButton}
+              <button onClick={() => this.handleCancelSend(player._id)}>
+                Cancel message
               </button>
-            ) : (
-              <button
-                className="send-btn send-btn-disabled"
-                aria-disabled="true"
-                disabled
-              >
-                Add selected squares
-              </button>
-            )}
-            <button onClick={() => this.handleCancelSend(player._id)}>
-              Cancel message
-            </button>
-          </div>
-        ) : canSend ? (
-          <button
-            className="send-btn"
-            onClick={() => this.handleSend(player._id)}
-          >
-            Send selected squares
-          </button>
-        ) : (
-          <button
-            className="send-btn send-btn-disabled"
-            aria-disabled="true"
-            disabled
-          >
-            Send selected squares
-          </button>
-        )}
-      </div>
-    ));
+            </div>
+          ) : (
+            sendButton
+          )}
+        </div>
+      );
+    });
 
     const discussion = (
       <div>

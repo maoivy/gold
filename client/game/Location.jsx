@@ -29,6 +29,10 @@ export default class Location extends React.Component {
       className += " location-hidden";
     }
 
+    if (this.props.hovered) {
+      className += " location-hovered";
+    }
+
     if (this.props.selectable) {
       className += " location-selectable";
     }
