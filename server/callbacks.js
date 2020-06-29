@@ -115,7 +115,6 @@ Empirica.onStageEnd((game, round, stage) => {
   } else if (stage.name === "dig") {
     // after the dig round, consolidate the players' choices and distribute gold
     const mines = round.get("mines");
-    const mineSet = new Set(mines);
 
     // find how many players chose to dig at each mine
     const mineChoices = {};
@@ -129,7 +128,7 @@ Empirica.onStageEnd((game, round, stage) => {
     );
     game.players.forEach((player, k) => {
       let location = player.get("location");
-      if (location && mineSet.has(location)) {
+      if (location && mineChoices[location]) {
         mineChoices[location]["players"].push(k);
       }
     });

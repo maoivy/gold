@@ -19,27 +19,59 @@ export default class TaskStimulus extends React.Component {
 
     const dig = <>hello</>;
 
-    const location = player.get("location");
+    const digLocation = player.get("location");
     const mineChoices = round.get("mineChoices");
     let results = null;
     if (stage.name === "results") {
-      if (location) {
+      if (digLocation) {
         let foundMine = false;
-        let locationIndex = location.row * ROWS + location.col;
         let otherPlayers = null;
         let totalGold = null;
         let goldReceived = null;
-        if (mineChoices[locationIndex]) {
+        if (mineChoices[digLocation]) {
           foundMine = true;
-          otherPlayers = mineChoices[locationIndex]["players"].length - 1;
-          totalGold = mineChoices[locationIndex]["gold"];
-          goldReceived = mineChoices[locationIndex]["distributed"];
+          otherPlayers = mineChoices[digLocation]["players"].length - 1;
+          totalGold = mineChoices[digLocation]["gold"];
+          goldReceived = mineChoices[digLocation]["distributed"];
         }
+        const worldMap = (
+          <div className="world">
+            <div className="col-labels">
+              <div className="location location-label"></div>
+              {[...Array(ROWS).keys()].map((k) => (
+                <div key={`col${k}`} className="location location-label">
+                  {k}
+                </div>
+              ))}
+            </div>
+            {world.map((row, k) => (
+              <div key={k} className="row">
+                <div key={`row${k}`} className="location location-label">
+                  {k}
+                </div>
+                {row.map((location) => {
+                  let locationIndex = location["location"];
+
+                  return (
+                    <Location
+                      key={`location${locationIndex}`}
+                      location={locationIndex}
+                      revealed={true}
+                      selectable={false}
+                      selected={locationIndex === digLocation}
+                      mine={location["mine"]}
+                      handleSelect={null}
+                    />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        );
         results = (
           <>
-            <p>
-              You chose to dig at row {location.row}, column {location.col}.
-            </p>
+            <p>You chose to dig at at the location shown.</p>
+            {worldMap}
             {foundMine ? (
               <p>
                 You found a mine! There was {totalGold} total gold at the mine,
