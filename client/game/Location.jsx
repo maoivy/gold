@@ -25,6 +25,8 @@ export default class Location extends React.Component {
     let className = "location";
     if (this.props.revealed) {
       className += " location-revealed";
+    } else if (this.props.received) {
+      className += " location-received";
     } else {
       className += " location-hidden";
     }
@@ -42,7 +44,7 @@ export default class Location extends React.Component {
     }
 
     let content = "";
-    if (this.props.revealed) {
+    if (this.props.revealed || this.props.received) {
       content = <img src={this.props.terrain} className="location-terrain" />;
     }
 

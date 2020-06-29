@@ -163,9 +163,6 @@ export default class TaskResponse extends React.Component {
             </div>
             {row.map((location) => {
               let locationIndex = location["location"];
-              let shown =
-                this.revealed.has(locationIndex) ||
-                this.receiving.has(locationIndex);
 
               let selected = false;
               if (stage.name === "discussion") {
@@ -178,7 +175,8 @@ export default class TaskResponse extends React.Component {
                 <Location
                   key={`location${locationIndex}`}
                   location={locationIndex}
-                  revealed={shown}
+                  revealed={this.revealed.has(locationIndex)}
+                  received={this.receiving.has(locationIndex)}
                   selectable={this.allowSelect(locationIndex)}
                   selected={selected}
                   hovered={this.state.hovered.has(locationIndex)}
