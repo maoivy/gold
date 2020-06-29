@@ -1,13 +1,5 @@
 import React from "react";
 
-// import red from "../../public/red.png";
-// import blue from "../../public/blue.png";
-
-// const AVATAR_MAP = {
-//   red: red,
-//   blue: blue,
-// };
-
 export default class SocialExposure extends React.Component {
   renderSocialInteraction(otherPlayer, player) {
     return (

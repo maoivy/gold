@@ -59,6 +59,7 @@
   .task {
     align-content: right;
     padding: 4rem 4rem 0 4rem;
+    width: 50vw;
 
     .world {
       display: flex;
@@ -75,11 +76,15 @@
 
     .location {
       border: 1px solid #ddd;
-      height: 3em;
-      width: 3em;
+      height: 3.5em;
+      width: 3.5em;
       display: flex;
       align-items: center;
       justify-content: space-around;
+
+      .location-terrain {
+        width: 3em;
+      }
     }
 
     .location-hidden {
@@ -87,7 +92,7 @@
     }
 
     .location-revealed {
-      background: #fff;
+      background: #fcfcfc;
     }
 
     .location-label {
@@ -103,15 +108,7 @@
     }
 
     .task-response {
-      margin: 3rem 0 0;
-
-      form {
-        width: 40rem;
-
-        button[type="submit"] {
-          margin-top: 2rem;
-        }
-      }
+      margin: 0 0 0;
 
       .response-submitted {
         background-color: #e8e8e8;

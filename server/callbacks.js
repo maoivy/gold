@@ -5,6 +5,7 @@ const COLS = 10;
 const MINES = 5;
 const MAX_GOLD = 10;
 const REVEALED = 10;
+const TERRAINS = ["forest.png", "mountain.png", "sea.png"];
 
 // onGameStart is triggered opnce per game before the game starts, and before
 // the first onRoundStart. It receives the game and list of all the players in
@@ -21,7 +22,13 @@ Empirica.onRoundStart((game, round) => {
     let row = [];
     for (let j = 0; j < COLS; j++) {
       let location = i * ROWS + j;
-      row.push({ revealed: false, mine: false, location: location });
+      let terrain = TERRAINS[Math.floor(Math.random() * TERRAINS.length)];
+      row.push({
+        revealed: false,
+        mine: false,
+        location: location,
+        terrain: terrain,
+      });
       worldSet.add(location);
     }
     world.push(row);
@@ -38,6 +45,7 @@ Empirica.onRoundStart((game, round) => {
     mines.push({ location, gold });
     worldSet.delete(location);
     world[mineRow][mineCol]["mine"] = true;
+    world[mineRow][mineCol]["terrain"] = "mine.png";
   }
   round.set("mines", mines);
   round.set("world", world);

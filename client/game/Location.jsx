@@ -38,8 +38,8 @@ export default class Location extends React.Component {
     }
 
     let content = "";
-    if (this.props.revealed && this.props.mine) {
-      content = "G";
+    if (this.props.revealed) {
+      content = <img src={this.props.terrain} className="location-terrain" />;
     }
 
     return (

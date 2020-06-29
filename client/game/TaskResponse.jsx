@@ -134,6 +134,7 @@ export default class TaskResponse extends React.Component {
                   selected={selected}
                   mine={location["mine"]}
                   handleSelect={handleSquareClick}
+                  terrain={location["terrain"]}
                 />
               );
             })}
