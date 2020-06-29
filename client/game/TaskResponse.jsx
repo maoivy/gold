@@ -53,19 +53,52 @@ export default class TaskResponse extends React.Component {
     }
   };
 
+  allowAdd = (recipient) => {
+    const { player } = this.props;
+    const sending = player.get("sending");
+    if (!sending[recipient]) {
+      return false;
+    }
+    let sendingSet = new Set(sending[recipient]["squares"]);
+    if (
+      [...this.state.selected].some((location) => !sendingSet.has(location))
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  allowRemove = (recipient) => {
+    const { player } = this.props;
+    const sending = player.get("sending");
+    if (!sending[recipient]) {
+      return false;
+    }
+    let sendingSet = new Set(sending[recipient]["squares"]);
+    if (
+      [...this.state.selected].every((location) => sendingSet.has(location))
+    ) {
+      return true;
+    }
+    return false;
+  };
+
   handleCancelSend = (recipient) => {
     const { player } = this.props;
     const sending = player.get("sending");
     if (sending[recipient]) {
       delete sending[recipient];
       player.set("sending", sending);
+      this.setState({ hovered: new Set() });
     }
   };
 
   handlePlayerSelectHover = (recipient) => {
     const { player } = this.props;
     const sending = player.get("sending");
-    this.setState({ hovered: new Set(sending[recipient]["squares"]) });
+    if (sending[recipient]) {
+      this.setState({ hovered: new Set(sending[recipient]["squares"]) });
+    }
   };
 
   handleHoverEnd = () => {
@@ -200,10 +233,7 @@ export default class TaskResponse extends React.Component {
         </button>
       );
 
-      let sendingSet = new Set(sending[player._id]["squares"]);
-      let canAdd =
-        hasSelection &&
-        [...this.state.selected].some((location) => !sendingSet.has(location));
+      let canAdd = hasSelection && this.allowAdd();
       let addButton = canAdd ? (
         <button
           className="send-btn"
@@ -221,9 +251,7 @@ export default class TaskResponse extends React.Component {
         </button>
       );
 
-      let canRemove =
-        hasSelection &&
-        [...this.state.selected].every((location) => sendingSet.has(location));
+      let canRemove = hasSelection && this.allowRemove();
       let removeButton = canRemove ? (
         <button
           className="send-btn"
