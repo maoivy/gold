@@ -1,5 +1,6 @@
 import React from "react";
 import Location from "./Location";
+import SocialExposure from "./SocialExposure.jsx";
 
 const ROWS = 10;
 
@@ -91,7 +92,7 @@ export default class TaskResponse extends React.Component {
     }
   };
 
-  renderMap = (handleSquareClick, selectedIsSet) => {
+  renderMap = (handleSquareClick) => {
     const { game, player, stage, round } = this.props;
     const world = round.get("world");
     const revealed = new Set(player.get("revealed"));
@@ -117,17 +118,20 @@ export default class TaskResponse extends React.Component {
               let shown =
                 revealed.has(locationIndex) || receiving.has(locationIndex);
 
+              let selected = false;
+              if (stage.name === "discussion") {
+                selected = this.state.selected.has(locationIndex);
+              } else if (stage.name === "dig") {
+                selected = this.state.selected === locationIndex;
+              }
+
               return (
                 <Location
                   key={`location${locationIndex}`}
                   location={locationIndex}
                   revealed={shown}
                   selectable={this.allowSelect(locationIndex)}
-                  selected={
-                    selectedIsSet
-                      ? this.state.selected.has(locationIndex)
-                      : this.state.selected === locationIndex
-                  }
+                  selected={selected}
                   mine={location["mine"]}
                   handleSelect={handleSquareClick}
                 />
@@ -158,9 +162,16 @@ export default class TaskResponse extends React.Component {
       return this.renderSubmitted();
     }
 
+    const playerSelect = this.otherPlayers.map((player) => (
+      <p key={player._id}>{player.id}</p>
+    ));
+
     const discussion = (
       <div>
-        {this.renderMap(this.toggleDiscussionSelect, true)}
+        <div className="discussion-select">
+          {this.renderMap(this.toggleDiscussionSelect)}
+          {this.state.selected.size !== 0 && playerSelect}
+        </div>
         <button onClick={() => this.setState({ selected: new Set() })}>
           Reset selection
         </button>
@@ -170,7 +181,7 @@ export default class TaskResponse extends React.Component {
 
     const dig = (
       <div>
-        {this.renderMap(this.toggleDigSelect, false)}
+        {this.renderMap(this.handleDigSelect)}
         <button onClick={this.handleDig}>Finish</button>
       </div>
     );
