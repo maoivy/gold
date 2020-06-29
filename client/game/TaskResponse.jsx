@@ -9,19 +9,62 @@ export default class TaskResponse extends React.Component {
     super(props);
     const { game, player } = this.props;
     this.otherPlayers = _.reject(game.players, (p) => p._id === player._id);
+    this.revealed = new Set(player.get("revealed"));
+    this.receiving = new Set(player.get("receiving"));
 
     this.state = {
-      player: this.otherPlayers[0]._id,
       selected: new Set(),
+      hover: new Set(),
     };
   }
 
-  handleRowChange = (value) => {
-    this.setState({ row: value });
+  handleSend = (recipient) => {
+    const { game, player } = this.props;
+    const sending = player.get("sending");
+
+    let message;
+    let selected = this.state.selected;
+    if (sending[recipient]) {
+      message = sending[recipient];
+      message.squares = Array.from(new Set([...message.squares, ...selected]));
+    } else {
+      message = {
+        from: player._id,
+        to: recipient,
+        squares: [...selected],
+      };
+    }
+    sending[recipient] = message;
+    player.set("sending", sending);
+    this.setState({ message: "Your message was sent!" });
   };
 
-  handleColChange = (value) => {
-    this.setState({ col: value });
+  handleCancelSend = (recipient) => {
+    const { player } = this.props;
+    const sending = player.get("sending");
+    if (sending[recipient]) {
+      delete sending[recipient];
+      player.set("sending", sending);
+    }
+  };
+
+  allowSelect = (location) => {
+    const { stage } = this.props;
+    if (stage.name === "dig") {
+      return true;
+    } else if (stage.name === "discussion") {
+      return this.revealed.has(location);
+    }
+  };
+
+  toggleDiscussionSelect = (location) => {
+    let selected = this.state.selected;
+    if (selected.has(location)) {
+      selected.delete(location);
+    } else {
+      selected.add(location);
+    }
+    this.setState({ selected });
   };
 
   handleDig = (event) => {
@@ -38,65 +81,13 @@ export default class TaskResponse extends React.Component {
     this.props.player.stage.submit();
   };
 
-  handleSend = (event) => {
-    event.preventDefault();
-    const { game, player } = this.props;
-    const sending = { ...player.get("sending") };
-    if (
-      !this.validateInput(this.state.row) ||
-      !this.validateInput(this.state.col)
-    ) {
-      this.setState({ message: "That's not a valid location!" });
-    } else if (!this.state.player) {
-      this.setState({ message: "Select a player." });
-    } else {
-      let message;
-      let index = parseInt(this.state.row) * ROWS + parseInt(this.state.col);
-      if (sending[this.state.player]) {
-        message = sending[this.state.player];
-        message.squares.push(index);
-      } else {
-        message = {
-          from: player._id,
-          to: this.state.player,
-          squares: [index],
-        };
-      }
-      sending[this.state.player] = message;
-      player.set("sending", sending);
-      this.setState({ message: "Your message was sent!" });
-    }
-  };
-
-  toggleDiscussionSelect = (location) => {
-    let selected = this.state.selected;
-    if (selected.has(location)) {
-      selected.delete(location);
-    } else {
-      selected.add(location);
-    }
-    this.setState({ selected });
-  };
-
   handleDigSelect = (location) => {
     this.setState({ selected: location });
-  };
-
-  allowSelect = (location) => {
-    const { stage, player } = this.props;
-    if (stage.name === "dig") {
-      return true;
-    } else if (stage.name === "discussion") {
-      const revealed = new Set(player.get("revealed"));
-      return revealed.has(location);
-    }
   };
 
   renderMap = (handleSquareClick) => {
     const { game, player, stage, round } = this.props;
     const world = round.get("world");
-    const revealed = new Set(player.get("revealed"));
-    const receiving = new Set(player.get("receiving"));
 
     const worldMap = (
       <div className="world">
@@ -116,7 +107,8 @@ export default class TaskResponse extends React.Component {
             {row.map((location) => {
               let locationIndex = location["location"];
               let shown =
-                revealed.has(locationIndex) || receiving.has(locationIndex);
+                this.revealed.has(locationIndex) ||
+                this.receiving.has(locationIndex);
 
               let selected = false;
               if (stage.name === "discussion") {
@@ -163,15 +155,58 @@ export default class TaskResponse extends React.Component {
       return this.renderSubmitted();
     }
 
+    const sending = player.get("sending");
+    const canSend = this.state.selected.size !== 0;
     const playerSelect = this.otherPlayers.map((player) => (
-      <p key={player._id}>{player.id}</p>
+      <div key={player._id} className="player-select-player">
+        <img src={player.get("avatar")} className="player-select-avatar" />
+        {player.id}
+        {sending[player._id] ? (
+          <div>
+            {canSend ? (
+              <button
+                className="send-btn"
+                onClick={() => this.handleSend(player._id)}
+              >
+                Add selected squares
+              </button>
+            ) : (
+              <button
+                className="send-btn send-btn-disabled"
+                aria-disabled="true"
+                disabled
+              >
+                Add selected squares
+              </button>
+            )}
+            <button onClick={() => this.handleCancelSend(player._id)}>
+              Cancel message
+            </button>
+          </div>
+        ) : canSend ? (
+          <button
+            className="send-btn"
+            onClick={() => this.handleSend(player._id)}
+          >
+            Send selected squares
+          </button>
+        ) : (
+          <button
+            className="send-btn send-btn-disabled"
+            aria-disabled="true"
+            disabled
+          >
+            Send selected squares
+          </button>
+        )}
+      </div>
     ));
 
     const discussion = (
       <div>
         <div className="discussion-select">
           {this.renderMap(this.toggleDiscussionSelect)}
-          {this.state.selected.size !== 0 && playerSelect}
+          <div className="player-select">{playerSelect}</div>
         </div>
         <button onClick={() => this.setState({ selected: new Set() })}>
           Reset selection

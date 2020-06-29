@@ -61,6 +61,7 @@ export default class TaskStimulus extends React.Component {
                       selected={locationIndex === digLocation}
                       mine={location["mine"]}
                       handleSelect={null}
+                      terrain={location["terrain"]}
                     />
                   );
                 })}
