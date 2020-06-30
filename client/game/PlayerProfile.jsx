@@ -25,8 +25,8 @@ export default class PlayerProfile extends React.Component {
     const { player } = this.props;
     return (
       <div className="profile-score">
-        <h4>Total score</h4>
-        <span>{(player.get("score") || 0).toFixed(2)}</span>
+        <h4>Total gold</h4>
+        <span>${(player.get("score") || 0).toFixed(2)}</span>
       </div>
     );
   }
