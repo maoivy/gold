@@ -149,16 +149,16 @@ export default class TaskResponse extends React.Component {
     const worldMap = (
       <div className="world">
         <div className="col-labels">
-          <div className="location location-label"></div>
+          <div className="location location-label-left location-label-top"></div>
           {[...Array(ROWS).keys()].map((k) => (
-            <div key={`col${k}`} className="location location-label">
+            <div key={`col${k}`} className="location location-label-top">
               {k}
             </div>
           ))}
         </div>
         {world.map((row, k) => (
           <div key={k} className="row">
-            <div key={`row${k}`} className="location location-label">
+            <div key={`row${k}`} className="location location-label-left">
               {k}
             </div>
             {row.map((location) => {
@@ -231,7 +231,7 @@ export default class TaskResponse extends React.Component {
         </button>
       );
 
-      let canAdd = hasSelection && this.allowAdd();
+      let canAdd = hasSelection && this.allowAdd(player._id);
       let addButton = canAdd ? (
         <button
           className="send-btn"
@@ -249,7 +249,7 @@ export default class TaskResponse extends React.Component {
         </button>
       );
 
-      let canRemove = hasSelection && this.allowRemove();
+      let canRemove = hasSelection && this.allowRemove(player._id);
       let removeButton = canRemove ? (
         <button
           className="send-btn"
@@ -275,18 +275,28 @@ export default class TaskResponse extends React.Component {
           onMouseOut={() => this.handleHoverEnd()}
         >
           <img src={player.get("avatar")} className="player-select-avatar" />
-          {player.id}
-          {sending[player._id] ? (
-            <div>
-              {addButton}
-              {removeButton}
-              <button onClick={() => this.handleCancelSend(player._id)}>
-                Cancel message
-              </button>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            {player.id}
+            <div className="player-select-btn-container">
+              {sending[player._id] ? (
+                <div>
+                  {addButton}
+                  {removeButton}
+                  <button onClick={() => this.handleCancelSend(player._id)}>
+                    Cancel message
+                  </button>
+                </div>
+              ) : (
+                sendButton
+              )}
             </div>
-          ) : (
-            sendButton
-          )}
+          </div>
         </div>
       );
     });
@@ -295,12 +305,17 @@ export default class TaskResponse extends React.Component {
       <div>
         <div className="discussion-select">
           {this.renderMap(this.toggleDiscussionSelect)}
-          <div className="player-select">{playerSelect}</div>
+          <div className="player-select">
+            <p>There are {this.otherPlayers.length} other players:</p>
+            {playerSelect}
+          </div>
         </div>
-        <button onClick={() => this.setState({ selected: new Set() })}>
-          Reset selection
-        </button>
-        <button onClick={this.handleSubmit}>Finish</button>
+        <div className="discussion-footer">
+          <button onClick={() => this.setState({ selected: new Set() })}>
+            Reset selection
+          </button>
+          <button onClick={this.handleSubmit}>Finish</button>
+        </div>
       </div>
     );
 

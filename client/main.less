@@ -99,8 +99,14 @@
       background: #eef0ff;
     }
 
-    .location-label {
+    .location-label-left {
       border: none !important;
+      margin-left: -2em;
+    }
+
+    .location-label-top {
+      border: none !important;
+      margin-top: -1em;
     }
 
     .location-selectable:hover {
@@ -140,13 +146,25 @@
 
           .player-select-player {
             display: flex;
+            margin-bottom: 1em;
 
             .player-select-avatar {
+              height: 4em;
               width: 4em;
               margin-right: 1em;
             }
+
+            .player-select-btn-container {
+              display: flex;
+            }
           }
         }
+      }
+
+      .discussion-footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1em;
       }
     }
   }
@@ -175,12 +193,13 @@
 
 button {
   padding: 0.8rem 1.2rem;
-  border-radius: 0.3rem;
+  border-radius: 2em;
   border: 1px solid lightgray;
-  background-color: #eee;
+  background-color: #fff;
 
   &:hover {
-    background-color: #ddd;
+    background-color: rgb(241, 241, 241);
+    cursor: pointer;
   }
 }
 
