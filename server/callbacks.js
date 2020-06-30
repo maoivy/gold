@@ -79,6 +79,7 @@ Empirica.onRoundStart((game, round) => {
     // reset previous data for the player
     player.set("location", null);
     player.set("receiving", []);
+    player.set("received", []);
     player.set("sending", new Object());
   });
 
@@ -104,21 +105,27 @@ Empirica.onStageEnd((game, round, stage) => {
 
     // initialize the dictionary of messages
     let messages = {};
-    game.players.forEach((player) => (messages[player._id] = []));
+    let squaresReceived = {};
+    game.players.forEach((player) => {
+      messages[player._id] = {};
+      squaresReceived[player._id] = [];
+    });
 
     // consolidate the messages
     game.players.forEach((player) => {
       let sending = player.get("sending");
       Object.values(sending).forEach((data) => {
         let { to, from, squares } = data;
-        messages[to].push(...squares);
+        messages[to][from] = squares;
+        squaresReceived[to].push(...squares);
       });
     });
 
-    // send the messages to their recipients
-    game.players.forEach((player) =>
-      player.set("receiving", messages[player._id])
-    );
+    // send the messages and squares to their recipients
+    game.players.forEach((player) => {
+      player.set("received", squaresReceived[player._id]);
+      player.set("receiving", messages[player._id]);
+    });
     round.set("messages", messages);
   } else if (stage.name === "dig") {
     // after the dig round, consolidate the players' choices and distribute gold

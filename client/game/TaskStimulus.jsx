@@ -13,11 +13,22 @@ export default class TaskStimulus extends React.Component {
     const messages = player.get("messages");
     const discussion = (
       <>
-        <p>Here are the squares we revealed to you.</p>
+        <p>
+          Here are the squares we revealed to you. Choose squares to share with
+          other players in your network. Hover over a player's name in the list
+          to show which squares you've currently selected to send them.
+        </p>
       </>
     );
 
-    const dig = <>hello</>;
+    const dig = (
+      <p>
+        Here are the squares we revealed to you, along with squares other
+        players in your network have revealed to you. Squares that were shared
+        with you that weren't already revealed to you are in blue. Hover a
+        player to see what squares they sent you. Choose a square to dig.
+      </p>
+    );
 
     const digLocation = player.get("location");
     const mineChoices = round.get("mineChoices");

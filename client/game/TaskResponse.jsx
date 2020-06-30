@@ -10,10 +10,13 @@ export default class TaskResponse extends React.Component {
     const { game, player } = this.props;
     this.otherPlayers = _.reject(game.players, (p) => p._id === player._id);
     this.revealed = new Set(player.get("revealed"));
-    this.receiving = new Set(player.get("receiving"));
+    // received is an array of all received squares. receiving is an object mapping senders to squares sent
+    this.received = new Set(player.get("received"));
+    this.receiving = player.get("receiving");
 
     this.state = {
       selected: new Set(),
+      hoveredPlayer: null,
       hovered: new Set(),
     };
   }
@@ -93,7 +96,7 @@ export default class TaskResponse extends React.Component {
     }
   };
 
-  handlePlayerSelectHover = (recipient) => {
+  handleDiscussionHover = (recipient) => {
     const { player } = this.props;
     const sending = player.get("sending");
     if (sending[recipient]) {
@@ -122,6 +125,12 @@ export default class TaskResponse extends React.Component {
       selected.add(location);
     }
     this.setState({ selected });
+  };
+
+  handleDigHover = (sender) => {
+    if (this.receiving[sender]) {
+      this.setState({ hovered: new Set(this.receiving[sender]) });
+    }
   };
 
   handleDig = (event) => {
@@ -176,7 +185,7 @@ export default class TaskResponse extends React.Component {
                   key={`location${locationIndex}`}
                   location={locationIndex}
                   revealed={this.revealed.has(locationIndex)}
-                  received={this.receiving.has(locationIndex)}
+                  received={this.received.has(locationIndex)}
                   selectable={this.allowSelect(locationIndex)}
                   selected={selected}
                   hovered={this.state.hovered.has(locationIndex)}
@@ -212,94 +221,119 @@ export default class TaskResponse extends React.Component {
     }
 
     const sending = player.get("sending");
-    const hasSelection = this.state.selected.size !== 0;
-    const playerSelect = this.otherPlayers.map((player) => {
-      let sendButton = hasSelection ? (
-        <button
-          className="send-btn"
-          onClick={() => this.handleSend(player._id)}
-        >
-          Send selected squares
-        </button>
-      ) : (
-        <button
-          className="send-btn send-btn-disabled"
-          aria-disabled="true"
-          disabled
-        >
-          Send selected squares
-        </button>
-      );
-
-      let canAdd = hasSelection && this.allowAdd(player._id);
-      let addButton = canAdd ? (
-        <button
-          className="send-btn"
-          onClick={() => this.handleSend(player._id)}
-        >
-          Add selected squares
-        </button>
-      ) : (
-        <button
-          className="send-btn send-btn-disabled"
-          aria-disabled="true"
-          disabled
-        >
-          Add selected squares
-        </button>
-      );
-
-      let canRemove = hasSelection && this.allowRemove(player._id);
-      let removeButton = canRemove ? (
-        <button
-          className="send-btn"
-          onClick={() => this.handleRemove(player._id)}
-        >
-          Remove selected squares
-        </button>
-      ) : (
-        <button
-          className="send-btn send-btn-disabled"
-          aria-disabled="true"
-          disabled
-        >
-          Remove selected squares
-        </button>
-      );
-
-      return (
-        <div
-          key={player._id}
-          className="player-select-player"
-          onMouseOver={() => this.handlePlayerSelectHover(player._id)}
-          onMouseOut={() => this.handleHoverEnd()}
-        >
-          <img src={player.get("avatar")} className="player-select-avatar" />
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
+    let playerSelect;
+    if (stage.name === "discussion") {
+      const hasSelection = this.state.selected.size !== 0;
+      playerSelect = this.otherPlayers.map((player) => {
+        let sendButton = hasSelection ? (
+          <button
+            className="send-btn"
+            onClick={() => this.handleSend(player._id)}
           >
-            {player.id}
-            <div className="player-select-btn-container">
-              {sending[player._id] ? (
-                <div>
-                  {addButton}
-                  {removeButton}
-                  <button onClick={() => this.handleCancelSend(player._id)}>
-                    Cancel message
-                  </button>
-                </div>
-              ) : (
-                sendButton
-              )}
+            Send selected squares
+          </button>
+        ) : (
+          <button
+            className="send-btn send-btn-disabled"
+            aria-disabled="true"
+            disabled
+          >
+            Send selected squares
+          </button>
+        );
+
+        let canAdd = hasSelection && this.allowAdd(player._id);
+        let addButton = canAdd ? (
+          <button
+            className="send-btn"
+            onClick={() => this.handleSend(player._id)}
+          >
+            Add selected squares
+          </button>
+        ) : (
+          <button
+            className="send-btn send-btn-disabled"
+            aria-disabled="true"
+            disabled
+          >
+            Add selected squares
+          </button>
+        );
+
+        let canRemove = hasSelection && this.allowRemove(player._id);
+        let removeButton = canRemove ? (
+          <button
+            className="send-btn"
+            onClick={() => this.handleRemove(player._id)}
+          >
+            Remove selected squares
+          </button>
+        ) : (
+          <button
+            className="send-btn send-btn-disabled"
+            aria-disabled="true"
+            disabled
+          >
+            Remove selected squares
+          </button>
+        );
+
+        return (
+          <div
+            key={player._id}
+            className="player-select-player"
+            onMouseOver={() => this.handleDiscussionHover(player._id)}
+            onMouseOut={() => this.handleHoverEnd()}
+          >
+            <img src={player.get("avatar")} className="player-select-avatar" />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              {player.id}
+              <div className="player-select-btn-container">
+                {sending[player._id] ? (
+                  <div>
+                    {addButton}
+                    {removeButton}
+                    <button onClick={() => this.handleCancelSend(player._id)}>
+                      Cancel message
+                    </button>
+                  </div>
+                ) : (
+                  sendButton
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      );
-    });
+        );
+      });
+    } else if (stage.name === "dig") {
+      playerSelect = this.otherPlayers.map((player) => {
+        return (
+          <div
+            key={player._id}
+            className="player-select-player"
+            onMouseOver={() => this.handleDigHover(player._id)}
+            onMouseOut={() => this.handleHoverEnd()}
+          >
+            <img src={player.get("avatar")} className="player-select-avatar" />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              {player.id}
+            </div>
+          </div>
+        );
+      });
+    }
 
     const discussion = (
       <div>
@@ -321,8 +355,16 @@ export default class TaskResponse extends React.Component {
 
     const dig = (
       <div>
-        {this.renderMap(this.handleDigSelect)}
-        <button onClick={this.handleDig}>Finish</button>
+        <div className="discussion-select">
+          {this.renderMap(this.handleDigSelect)}
+          <div className="player-select">
+            <p>There are {this.otherPlayers.length} other players:</p>
+            {playerSelect}
+          </div>
+        </div>
+        <div className="discussion-footer">
+          <button onClick={this.handleDig}>Dig and finish</button>
+        </div>
       </div>
     );
 
