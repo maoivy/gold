@@ -47,19 +47,25 @@ export default class TaskStimulus extends React.Component {
         }
         const worldMap = (
           <div className="world">
-            <div className="col-labels">
+            {/* <div className="col-labels">
               <div className="location location-label-left location-label-top"></div>
               {[...Array(ROWS).keys()].map((k) => (
-                <div key={`col${k}`} className="location location-label-top">
-                  {k}
+                <div
+                  key={`col${k + 1}`}
+                  className="location location-label-top"
+                >
+                  {k + 1}
                 </div>
               ))}
-            </div>
+            </div> */}
             {world.map((row, k) => (
               <div key={k} className="row">
-                <div key={`row${k}`} className="location location-label-left">
-                  {k}
-                </div>
+                {/* <div
+                  key={`row${k + 1}`}
+                  className="location location-label-left"
+                >
+                  {k + 1}
+                </div> */}
                 {row.map((location) => {
                   let locationIndex = location["location"];
 
@@ -83,16 +89,19 @@ export default class TaskStimulus extends React.Component {
         results = (
           <>
             <p>You chose to dig at at the location shown.</p>
-            {worldMap}
             {foundMine ? (
               <p>
                 You found a mine! There was {totalGold} total gold at the mine,
                 and there were {otherPlayers} other players also digging at the
-                same mine, so you got {goldReceived} gold.
+                same mine, so you got {goldReceived.toFixed(2)} gold.
               </p>
             ) : (
-              <p>There's no mine here, so your score stays the same.</p>
+              <p>
+                There's no mine here, so you haven't received any additional
+                gold.
+              </p>
             )}
+            {worldMap}
           </>
         );
       } else {

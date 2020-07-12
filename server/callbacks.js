@@ -1,5 +1,7 @@
 import Empirica from "meteor/empirica:core";
 
+const fetch = require("node-fetch");
+
 const ROWS = 10;
 const COLS = 10;
 const MINES = 5;
@@ -15,6 +17,13 @@ Empirica.onGameStart((game) => {});
 // onRoundStart is triggered before each round starts, and before onStageStart.
 // It receives the same options as onGameStart, and the round that is starting.
 Empirica.onRoundStart((game, round) => {
+  fetch("http://localhost:3000/map.py")
+    .then((response) => {
+      console.log(response);
+      return response.json();
+    })
+    .then((data) => console.log(data));
+
   // generate the world
   let world = [];
   let worldSet = new Set();

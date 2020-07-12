@@ -8,7 +8,11 @@ export default class TaskResponse extends React.Component {
   constructor(props) {
     super(props);
     const { game, player } = this.props;
-    this.otherPlayers = _.reject(game.players, (p) => p._id === player._id);
+    // reject all players that are the current player or not in their network
+    this.otherPlayers = _.reject(
+      game.players,
+      (p) => p._id === player._id || p.network !== player.network
+    );
     this.revealed = new Set(player.get("revealed"));
     // received is an array of all received squares. receiving is an object mapping senders to squares sent
     this.received = new Set(player.get("received"));
@@ -157,19 +161,19 @@ export default class TaskResponse extends React.Component {
 
     const worldMap = (
       <div className="world">
-        <div className="col-labels">
+        {/* <div className="col-labels">
           <div className="location location-label-left location-label-top"></div>
           {[...Array(ROWS).keys()].map((k) => (
             <div key={`col${k}`} className="location location-label-top">
               {k}
             </div>
           ))}
-        </div>
+        </div> */}
         {world.map((row, k) => (
           <div key={k} className="row">
-            <div key={`row${k}`} className="location location-label-left">
+            {/* <div key={`row${k}`} className="location location-label-left">
               {k}
-            </div>
+            </div> */}
             {row.map((location) => {
               let locationIndex = location["location"];
 
@@ -340,7 +344,10 @@ export default class TaskResponse extends React.Component {
         <div className="discussion-select">
           {this.renderMap(this.toggleDiscussionSelect)}
           <div className="player-select">
-            <p>There are {this.otherPlayers.length} other players:</p>
+            <p>
+              There are {game.players.length} total players in the game,{" "}
+              {this.otherPlayers.length} of whom are in your network:
+            </p>
             {playerSelect}
           </div>
         </div>
