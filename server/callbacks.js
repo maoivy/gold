@@ -17,11 +17,9 @@ Empirica.onGameStart((game) => {});
 // onRoundStart is triggered before each round starts, and before onStageStart.
 // It receives the same options as onGameStart, and the round that is starting.
 Empirica.onRoundStart((game, round) => {
-  fetch("http://localhost:3000/map.py")
-    .then((response) => {
-      console.log(response);
-      return response.json();
-    })
+  const mines;
+  fetch("http://127.0.0.1:5000/")
+    .then((response) => response.json())
     .then((data) => console.log(data));
 
   // generate the world
