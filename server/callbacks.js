@@ -4,10 +4,11 @@ const fetch = require("node-fetch");
 
 const ROWS = 10;
 const COLS = 10;
-const MINES = 5;
+const MAX_MINES = 10;
+const MAX_FOREST = 20;
+const MAX_MOUNTAIN = 30;
 const MAX_GOLD = 10;
 const REVEALED = 10;
-const TERRAINS = ["forest.png", "mountain.png", "sea.png"];
 
 // onGameStart is triggered opnce per game before the game starts, and before
 // the first onRoundStart. It receives the game and list of all the players in
@@ -17,88 +18,105 @@ Empirica.onGameStart((game) => {});
 // onRoundStart is triggered before each round starts, and before onStageStart.
 // It receives the same options as onGameStart, and the round that is starting.
 Empirica.onRoundStart((game, round) => {
-  const mines;
-  fetch("http://127.0.0.1:5000/")
+  // generate number of each terrain
+  const numMines = Math.floor(Math.random() * (MAX_MINES - 1)) + 1;
+  const numForest = Math.floor(Math.random() * (MAX_FOREST - 1)) + 1;
+  const numMountain = Math.floor(Math.random() * (MAX_MOUNTAIN - 1)) + 1;
+
+  // generate the map
+  fetch(
+    `http://127.0.0.1:5000/?total=${
+      ROWS * COLS
+    }&mines=${numMines}&forest=${numForest}&mountain=${numMountain}`
+  )
     .then((response) => response.json())
-    .then((data) => console.log(data));
-
-  // generate the world
-  let world = [];
-  let worldSet = new Set();
-  for (let i = 0; i < ROWS; i++) {
-    let row = [];
-    for (let j = 0; j < COLS; j++) {
-      let location = i * ROWS + j;
-      let terrain = TERRAINS[Math.floor(Math.random() * TERRAINS.length)];
-      row.push({
-        revealed: false,
-        mine: false,
-        location: location,
-        terrain: terrain,
-      });
-      worldSet.add(location);
-    }
-    world.push(row);
-  }
-
-  // generate the mines (between 1 and 5)
-  const numMines = Math.floor(Math.random() * (MINES - 1)) + 1;
-  let mines = [];
-  for (let i = 0; i < numMines; i++) {
-    let mineRow = Math.floor(Math.random() * ROWS);
-    let mineCol = Math.floor(Math.random() * COLS);
-    let gold = Math.floor(Math.random() * (MAX_GOLD - 1)) + 1;
-    let location = mineRow * ROWS + mineCol;
-    mines.push({ location, gold });
-    worldSet.delete(location);
-    world[mineRow][mineCol]["mine"] = true;
-    world[mineRow][mineCol]["terrain"] = "mine.png";
-  }
-  round.set("mines", mines);
-  round.set("world", world);
-
-  // reveal squares for each player
-  const numNormal = ROWS * COLS - numMines;
-  const normals = Array.from(worldSet);
-
-  game.players.forEach((player) => {
-    let revealed = new Set();
-    for (let i = 0; i < REVEALED; i++) {
-      let showMine = Math.floor(Math.random()) < player.get("chance");
-      let minesRemaining = mines.some((mine) => !revealed.has(mine.location));
-
-      if (showMine && minesRemaining) {
-        let index = Math.floor(Math.random() * numMines);
-        while (revealed.has(mines[index]["location"])) {
-          index = Math.floor(Math.random() * numMines);
+    .then((data) => {
+      console.log(data);
+      const mineIndices = new Set(data["mines"]);
+      const forestIndices = new Set(data["forest"]);
+      const mountainIndices = new Set(data["mountain"]);
+      const seaIndices = new Set(data["sea"]);
+      // generate the world and set square properties
+      let world = [];
+      let mines = [];
+      for (let i = 0; i < ROWS; i++) {
+        let row = [];
+        for (let j = 0; j < COLS; j++) {
+          let location = i * ROWS + j;
+          if (mineIndices.has(location)) {
+            // if it's a mine, generate its gold
+            let gold = Math.floor(Math.random() * (MAX_GOLD - 1)) + 1;
+            mines.push({ location, gold });
+            row.push({
+              revealed: false,
+              mine: true,
+              location,
+              terrain: "mine.png",
+            });
+          } else {
+            let terrain = "";
+            if (forestIndices.has(location)) {
+              terrain = "forest.png";
+            } else if (mountainIndices.has(location)) {
+              terrain = "mountain.png";
+            } else if (seaIndices.has(location)) {
+              terrain = "sea.png";
+            }
+            row.push({
+              revealed: false,
+              mine: false,
+              location,
+              terrain: terrain,
+            });
+          }
         }
-        square = mines[index]["location"];
-      } else {
-        let index = Math.floor(Math.random() * numNormal);
-        while (revealed.has(normals[index])) {
-          index = Math.floor(Math.random() * numNormal);
-        }
-        square = normals[index];
+        world.push(row);
       }
-      revealed.add(square);
-    }
-    player.set("revealed", Array.from(revealed));
-    // reset previous data for the player
-    player.set("location", null);
-    player.set("receiving", []);
-    player.set("received", []);
-    player.set("sending", new Object());
-  });
+      round.set("mines", mines);
+      round.set("world", world);
 
-  round.set("messages", []);
-  round.set("mineChoices", null);
+      // reveal squares for each player
+      const numNormal = ROWS * COLS - numMines;
+      const normals = [...data["forest"], ...data["mountain"], ...data["sea"]];
+      game.players.forEach((player) => {
+        let revealed = new Set();
+        for (let i = 0; i < REVEALED; i++) {
+          let showMine = Math.floor(Math.random()) < player.get("chance");
+          let minesRemaining = mines.some(
+            (mine) => !revealed.has(mine.location)
+          );
+
+          if (showMine && minesRemaining) {
+            let index = Math.floor(Math.random() * numMines);
+            while (revealed.has(mines[index]["location"])) {
+              index = Math.floor(Math.random() * numMines);
+            }
+            square = mines[index]["location"];
+          } else {
+            let index = Math.floor(Math.random() * numNormal);
+            while (revealed.has(normals[index])) {
+              index = Math.floor(Math.random() * numNormal);
+            }
+            square = normals[index];
+          }
+          revealed.add(square);
+        }
+        player.set("revealed", Array.from(revealed));
+        // reset previous data for the player
+        player.set("location", null);
+        player.set("receiving", []);
+        player.set("received", []);
+        player.set("sending", new Object());
+      });
+
+      round.set("messages", []);
+      round.set("mineChoices", null);
+    });
 });
 
 // onStageStart is triggered before each stage starts.
 // It receives the same options as onRoundStart, and the stage that is starting.
-Empirica.onStageStart((game, round, stage) => {
-  console.log(round.get("mines"));
-});
+Empirica.onStageStart((game, round, stage) => {});
 
 getGold = (gold, numPlayers) => {
   return gold / numPlayers;

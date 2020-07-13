@@ -8,13 +8,13 @@ app = Flask(__name__)
 def main():
     if request.method == 'GET':
         try:
-            num_mines = request.args.get('mines', '')
-            num_forest = request.args.get('forest', '')
-            num_mountain = request.args.get('mountain', '')
+            total = int(request.args.get('total', ''))
+            num_mines = int(request.args.get('mines', ''))
+            num_forest = int(request.args.get('forest', ''))
+            num_mountain = int(request.args.get('mountain', ''))
 
-            mean = [10] * 100
-            # cov = [[0 for _ in range(100)] for _ in range(100)]
-            cov = np.identity(100)
+            mean = [10] * total
+            cov = np.identity(total)
 
             # generate the values for the squares
             squares = np.random.multivariate_normal(mean, cov)
@@ -22,17 +22,18 @@ def main():
             # designate square terrain based on values
             square_array = np.array(squares)
 
-            partition = np.argpartition(square_array, -1*num_mines)
+            partition = np.argpartition(
+                square_array, [-1*num_mines, -1*(num_mines+num_forest), -1*(num_mines+num_forest+num_mountain)])
             mines = partition[-1*num_mines:].tolist()
-            remaining = square_array[partition[:-1*num_mines]]
+            forest = partition[-1*(num_mines+num_forest):-1*num_mines].tolist()
+            mountain = partition[-1*(num_mines+num_forest+num_mountain)
+                                     :-1*(num_mines+num_forest)].tolist()
+            sea = partition[:-1*(num_mines+num_forest+num_mountain)].tolist()
 
-            partition = np.argpartition(remaining, -1*num_forest)
-            forest = partition[-1*num_forest:].tolist()
-            remaining = square_array[partition[:-1*num_forest]]
+            return json.dumps({"mines": mines, "forest": forest, "mountain": mountain, "sea": sea})
+        except:
+            return json.dumps("Error")
 
-            partition = np.argpartition(remaining, -1*num_mountain)
-            mountains = partition[-1*num_mountain:].tolist()
-            sea = partition[:-1*num_mountain].tolist()
-            return(json.dumps({"mines": mines, "sea": sea, "forest": forest, "mountains": mountains}))
-        except Exception:
-            return Exception
+
+if __name__ == '__main__':
+    app.run()
