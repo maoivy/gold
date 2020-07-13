@@ -25,7 +25,7 @@ Empirica.onRoundStart((game, round) => {
 
   // generate the map
   fetch(
-    `http://flask-env.eba-85qkbak4.us-east-2.elasticbeanstalk.com/?total=${
+    `http://minemapgen.us-east-2.elasticbeanstalk.com?total=${
       ROWS * COLS
     }&mines=${numMines}&forest=${numForest}&mountain=${numMountain}`
   )
